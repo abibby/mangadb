@@ -4,12 +4,14 @@ import (
 	"context"
 	"os"
 
+	"github.com/abibby/icbmdb/app"
+	"github.com/abibby/icbmdb/services/seriesupdate"
 	"github.com/abibby/salusa/clog"
 	"github.com/abibby/salusa/di"
-	"github.com/abibby/icbmdb/app"
 )
 
 func main() {
+
 	ctx := di.ContextWithDependencyProvider(
 		context.Background(),
 		di.NewDependencyProvider(),
@@ -21,9 +23,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = app.Kernel.Run(ctx)
+	err = seriesupdate.Update()
 	if err != nil {
-		clog.Use(ctx).Error("error running", "error", err)
-		os.Exit(1)
+		panic(err)
 	}
+	// err = app.Kernel.Run(ctx)
+	// if err != nil {
+	// 	clog.Use(ctx).Error("error running", "error", err)
+	// 	os.Exit(1)
+	// }
 }

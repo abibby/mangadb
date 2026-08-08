@@ -11,7 +11,7 @@ import (
 type User struct {
 	auth.EmailVerifiedUser
 
-	// ID           int    `json:"id"       db:"id,primary,autoincrement"`
+	// ID           int    `json:"id"       db:"id,primary"`
 	// Username     string `json:"username" db:"username"`
 	// Password     []byte `json:"-"        db:"-"`
 	// PasswordHash []byte `json:"-"        db:"password"`

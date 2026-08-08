@@ -1,12 +1,11 @@
 package routes
 
 import (
+	"github.com/abibby/icbmdb/app/models"
 	"github.com/abibby/salusa/auth"
 	"github.com/abibby/salusa/openapidoc"
 	"github.com/abibby/salusa/request"
 	"github.com/abibby/salusa/router"
-	"github.com/abibby/icbmdb/app/handlers"
-	"github.com/abibby/icbmdb/app/models"
 	"github.com/abibby/salusa/view"
 	"github.com/google/uuid"
 )
@@ -35,7 +34,5 @@ func InitRoutes(r *router.Router) {
 			auth.ResetPasswordName("reset-password"),
 		))
 
-		r.Get("/user", handlers.UserList)
-		r.Get("/user/{id}", handlers.UserGet)
 	})
 }
