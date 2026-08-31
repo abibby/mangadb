@@ -1,62 +1,53 @@
 package mangaplus
 
-import (
-	"iter"
+// type Series struct {
+// 	client      *mangaplus.Client
+// 	titleDetail *mpproto.TitleDetailView
+// }
 
-	"github.com/abibby/icbmdb/app/models"
-	"github.com/abibby/icbmdb/services/datasource"
-	"github.com/abibby/icbmdb/services/mangaplus"
-	"github.com/abibby/icbmdb/services/mangaplus/mpproto"
-)
+// var _ datasource.SeriesApplier = (*Series)(nil)
 
-type Series struct {
-	client      *mangaplus.Client
-	titleDetail *mpproto.TitleDetailView
-}
+// // ApplyData implements [datasource.SeriesApplier].
+// func (a *Series) ApplyData(s *models.Series) error {
+// 	title := a.titleDetail.GetTitle()
+// 	s.Title = title.GetName()
+// 	s.Description = a.titleDetail.GetOverview()
+// 	return nil
+// }
 
-var _ datasource.SeriesApplier = (*Series)(nil)
+// // Issues implements [datasource.SeriesApplier].
+// func (s *Series) Issues() ([]datasource.IssueApplier, error) {
 
-// ApplyData implements [datasource.SeriesApplier].
-func (a *Series) ApplyData(s *models.Series) error {
-	title := a.titleDetail.GetTitle()
-	s.Title = title.GetName()
-	s.Description = a.titleDetail.GetOverview()
-	return nil
-}
+// 	groups := s.titleDetail.GetChapterListGroup()
 
-// Issues implements [datasource.SeriesApplier].
-func (s *Series) Issues() ([]datasource.IssueApplier, error) {
+// 	issues := []datasource.IssueApplier{}
+// 	for c := range chapters(groups) {
+// 		issues = append(issues, &Issue{
+// 			chapter: c,
+// 		})
+// 	}
 
-	groups := s.titleDetail.GetChapterListGroup()
+// 	return issues, nil
+// }
 
-	issues := []datasource.IssueApplier{}
-	for c := range chapters(groups) {
-		issues = append(issues, &Issue{
-			chapter: c,
-		})
-	}
-
-	return issues, nil
-}
-
-func chapters(groups []*mpproto.TitleDetailView_ChapterGroup) iter.Seq[*mpproto.Chapter] {
-	return func(yield func(*mpproto.Chapter) bool) {
-		for _, group := range groups {
-			for _, c := range group.FirstChapterList {
-				if !yield(c) {
-					return
-				}
-			}
-			for _, c := range group.MidChapterList {
-				if !yield(c) {
-					return
-				}
-			}
-			for _, c := range group.LastChapterList {
-				if !yield(c) {
-					return
-				}
-			}
-		}
-	}
-}
+// func chapters(groups []*mpproto.TitleDetailView_ChapterGroup) iter.Seq[*mpproto.Chapter] {
+// 	return func(yield func(*mpproto.Chapter) bool) {
+// 		for _, group := range groups {
+// 			for _, c := range group.FirstChapterList {
+// 				if !yield(c) {
+// 					return
+// 				}
+// 			}
+// 			for _, c := range group.MidChapterList {
+// 				if !yield(c) {
+// 					return
+// 				}
+// 			}
+// 			for _, c := range group.LastChapterList {
+// 				if !yield(c) {
+// 					return
+// 				}
+// 			}
+// 		}
+// 	}
+// }

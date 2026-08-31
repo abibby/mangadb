@@ -7,7 +7,7 @@ import (
 
 func init() {
 	migrations.Add(&migrate.Migration{
-		Name: "20260831_045944-Issue",
+		Name: "20260831_081822-Issue",
 		Up: schema.Create("issues", func(table *schema.Blueprint) {
 			table.Blob("id").Primary()
 			table.String("title")

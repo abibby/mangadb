@@ -1,12 +1,15 @@
 package mangaplus
 
 import (
+	"context"
 	"crypto/md5"
 	"encoding/hex"
 	"net/http"
 	"net/url"
+	"time"
 
-	"github.com/abibby/icbmdb/services/mangaplus/mpproto"
+	"abibby.com/salusa/di"
+	"github.com/abibby/icbmdb/services/datasource/mangaplus/mpproto"
 )
 
 type Client struct {
@@ -19,6 +22,13 @@ func NewClient(c *http.Client) *Client {
 	}
 }
 
+func Register(ctx context.Context) {
+	di.RegisterLazySingleton(ctx, func() (*Client, error) {
+		return NewClient(&http.Client{
+			Timeout: time.Second * 10,
+		}), nil
+	})
+}
 func (c *Client) TitleDetailsV3(id string) (*mpproto.TitleDetailView, error) {
 
 	result, err := c.proto.Get("https://jumpg-webapi.tokyo-cdn.com/api/title_detailV3?title_id=%s", id)

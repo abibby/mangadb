@@ -1,45 +1,35 @@
 package mangaplus
 
-import (
-	"strconv"
-	"strings"
-	"time"
+// type Issue struct {
+// 	chapter *mpproto.Chapter
+// }
 
-	"github.com/abibby/icbmdb/app/models"
-	"github.com/abibby/icbmdb/services/datasource"
-	"github.com/abibby/icbmdb/services/mangaplus/mpproto"
-)
+// // var _ datasource.IssueApplier = (*Issue)(nil)
 
-type Issue struct {
-	chapter *mpproto.Chapter
-}
+// // ApplyData implements [datasource.Applier].
+// func (a *Issue) ApplyData(i *models.Issue) error {
 
-var _ datasource.IssueApplier = (*Issue)(nil)
+// 	if num, ok := a.number(); ok {
+// 		i.Number = num
+// 	}
+// 	i.Title = strings.SplitAfterN(a.chapter.GetSubTitle(), ": ", 2)[1]
+// 	i.ReleaseDate = time.Unix(a.chapter.GetStartTimeStamp(), 0)
+// 	return nil
+// }
 
-// ApplyData implements [datasource.Applier].
-func (a *Issue) ApplyData(i *models.Issue) error {
+// // Key implements [datasource.IssueApplier].
+// func (a *Issue) Key() datasource.ChapterKey {
+// 	num, _ := a.number()
+// 	return datasource.NewChapterKey("", num)
+// }
 
-	if num, ok := a.number(); ok {
-		i.Number = num
-	}
-	i.Title = strings.SplitAfterN(a.chapter.GetSubTitle(), ": ", 2)[1]
-	i.ReleaseDate = time.Unix(a.chapter.GetStartTimeStamp(), 0)
-	return nil
-}
-
-// Key implements [datasource.IssueApplier].
-func (a *Issue) Key() datasource.ChapterKey {
-	num, _ := a.number()
-	return datasource.NewChapterKey("", num)
-}
-
-func (a *Issue) number() (float32, bool) {
-	num, err := strconv.ParseFloat(strings.TrimPrefix(a.chapter.Name, "#"), 32)
-	if err != nil {
-		return 0, false
-	}
-	return float32(num), true
-}
+// func (a *Issue) number() (float32, bool) {
+// 	num, err := strconv.ParseFloat(strings.TrimPrefix(a.chapter.Name, "#"), 32)
+// 	if err != nil {
+// 		return 0, false
+// 	}
+// 	return float32(num), true
+// }
 
 // (*mpproto.Chapter)(0xc000355cb0)(
 // 	titleId:100171

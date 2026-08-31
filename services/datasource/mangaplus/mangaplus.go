@@ -1,69 +1,58 @@
 package mangaplus
 
-import (
-	"net/http"
-	"net/url"
-	"strings"
-	"time"
+// type MangaPlus struct {
+// 	client *mangaplus.Client
+// }
 
-	"github.com/abibby/icbmdb/app/models"
-	"github.com/abibby/icbmdb/services/datasource"
-	"github.com/abibby/icbmdb/services/mangaplus"
-)
+// var _ datasource.Datasource = (*MangaPlus)(nil)
 
-type MangaPlus struct {
-	client *mangaplus.Client
-}
+// func New() *MangaPlus {
+// 	return &MangaPlus{
+// 		client: mangaplus.NewClient(http.DefaultClient),
+// 	}
+// }
 
-var _ datasource.Datasource = (*MangaPlus)(nil)
+// // Quality implements [datasource.Datasource].
+// func (m *MangaPlus) Quality() int {
+// 	return 200
+// }
 
-func New() *MangaPlus {
-	return &MangaPlus{
-		client: mangaplus.NewClient(http.DefaultClient),
-	}
-}
+// // ID implements [datasource.Datasource].
+// func (m *MangaPlus) ID(s *models.DatasourceIDs) string {
+// 	return s.MangaPlusID
+// }
 
-// Quality implements [datasource.Datasource].
-func (m *MangaPlus) Quality() int {
-	return 200
-}
+// // UpdateTimestamp implements [datasource.Datasource].
+// func (m *MangaPlus) UpdateTimestamp(s *models.DatasourceIDs) {
+// 	s.MangaPlusUpdated = time.Now()
+// }
 
-// ID implements [datasource.Datasource].
-func (m *MangaPlus) ID(s *models.DatasourceIDs) string {
-	return s.MangaPlusID
-}
+// // Series implements [datasource.Datasource].
+// func (m *MangaPlus) Series(id string) (datasource.SeriesApplier, error) {
+// 	titleDetail, err := m.client.TitleDetailsV3(id)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-// UpdateTimestamp implements [datasource.Datasource].
-func (m *MangaPlus) UpdateTimestamp(s *models.DatasourceIDs) {
-	s.MangaPlusUpdated = time.Now()
-}
+// 	return &Series{
+// 		client:      m.client,
+// 		titleDetail: titleDetail,
+// 	}, nil
+// }
 
-// Series implements [datasource.Datasource].
-func (m *MangaPlus) Series(id string) (datasource.SeriesApplier, error) {
-	titleDetail, err := m.client.TitleDetailsV3(id)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Series{
-		client:      m.client,
-		titleDetail: titleDetail,
-	}, nil
-}
-
-// ExtractSeriesID implements [datasource.Datasource].
-func (m *MangaPlus) ApplySeriesID(s *models.Series, uri string) bool {
-	u, err := url.Parse(uri)
-	if err != nil {
-		return false
-	}
-	if u.Hostname() != "mangaplus.shueisha.co.jp" {
-		return false
-	}
-	parts := strings.Split(u.Path, "/")[1:]
-	if parts[0] != "titles" {
-		return false
-	}
-	s.MangaPlusID = parts[1]
-	return true
-}
+// // ExtractSeriesID implements [datasource.Datasource].
+// func (m *MangaPlus) ApplySeriesID(s *models.Series, uri string) bool {
+// 	u, err := url.Parse(uri)
+// 	if err != nil {
+// 		return false
+// 	}
+// 	if u.Hostname() != "mangaplus.shueisha.co.jp" {
+// 		return false
+// 	}
+// 	parts := strings.Split(u.Path, "/")[1:]
+// 	if parts[0] != "titles" {
+// 		return false
+// 	}
+// 	s.MangaPlusID = parts[1]
+// 	return true
+// }
