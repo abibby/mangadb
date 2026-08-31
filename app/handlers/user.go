@@ -3,8 +3,8 @@ package handlers
 import (
 	"context"
 
-	"github.com/abibby/salusa/database"
-	"github.com/abibby/salusa/request"
+	"abibby.com/salusa/database"
+	"abibby.com/salusa/request"
 	"github.com/abibby/icbmdb/app/models"
 	"github.com/jmoiron/sqlx"
 )

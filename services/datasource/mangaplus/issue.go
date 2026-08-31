@@ -14,20 +14,31 @@ type Issue struct {
 	chapter *mpproto.Chapter
 }
 
-var _ datasource.Applier[*models.Issue] = (*Issue)(nil)
+var _ datasource.IssueApplier = (*Issue)(nil)
 
 // ApplyData implements [datasource.Applier].
 func (a *Issue) ApplyData(i *models.Issue) error {
 
-	num, err := strconv.ParseFloat(strings.TrimPrefix(a.chapter.Name, "#"), 32)
-	if err != nil {
-		return err
+	if num, ok := a.number(); ok {
+		i.Number = num
 	}
-
-	i.Number = float32(num)
 	i.Title = strings.SplitAfterN(a.chapter.GetSubTitle(), ": ", 2)[1]
 	i.ReleaseDate = time.Unix(a.chapter.GetStartTimeStamp(), 0)
 	return nil
+}
+
+// Key implements [datasource.IssueApplier].
+func (a *Issue) Key() datasource.ChapterKey {
+	num, _ := a.number()
+	return datasource.NewChapterKey("", num)
+}
+
+func (a *Issue) number() (float32, bool) {
+	num, err := strconv.ParseFloat(strings.TrimPrefix(a.chapter.Name, "#"), 32)
+	if err != nil {
+		return 0, false
+	}
+	return float32(num), true
 }
 
 // (*mpproto.Chapter)(0xc000355cb0)(

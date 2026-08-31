@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
+	"abibby.com/salusa/database/builder"
+	"abibby.com/salusa/database/model/modeldi"
 	"github.com/abibby/icbmdb/app/providers"
-	"github.com/abibby/salusa/database/builder"
-	"github.com/abibby/salusa/database/model/modeldi"
 	"github.com/google/uuid"
 )
 
@@ -28,7 +28,9 @@ type Issue struct {
 	// Volume is a notion that is specific to US
 	// Comics, where the same series can have multiple volumes. Volumes can be
 	// referenced by number (1, 2, 3…) or by year (2018, 2020…).
-	VolumeID uuid.UUID `json:"volume_id" db:"volume_id"`
+	Volume int `json:"volume" db:"volume"`
+
+	// VolumeID uuid.UUID `json:"volume_id" db:"volume_id"`
 
 	// Quite specific to US comics, some books can be part of cross-over sory
 	// arcs. Those fields can be used to specify an alternate series, its number

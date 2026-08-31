@@ -4,10 +4,10 @@ import (
 	"context"
 	"os"
 
+	"abibby.com/salusa/clog"
+	"abibby.com/salusa/di"
 	"github.com/abibby/icbmdb/app"
 	"github.com/abibby/icbmdb/services/seriesupdate"
-	"github.com/abibby/salusa/clog"
-	"github.com/abibby/salusa/di"
 )
 
 func main() {

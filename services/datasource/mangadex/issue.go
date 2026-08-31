@@ -12,19 +12,36 @@ type Issue struct {
 	chapter *mangadexv5.Chapter
 }
 
-var _ datasource.Applier[*models.Issue] = (*Issue)(nil)
+var _ datasource.IssueApplier = (*Issue)(nil)
 
 // ApplyData implements [datasource.Applier].
 func (a *Issue) ApplyData(i *models.Issue) error {
 	i.Title = a.chapter.Title
-	num, err := strconv.ParseFloat(a.chapter.Chapter.String(), 32)
-	if err == nil {
-		i.Number = float32(num)
+
+	if num, ok := a.number(); ok {
+		i.Number = num
 	}
 
+	if vol, err := strconv.Atoi(a.chapter.Volume.String()); err == nil {
+		i.Volume = vol
+	}
 	i.ReleaseDate = a.chapter.PublishAt
 
 	return nil
+}
+
+// Key implements [datasource.IssueApplier].
+func (a *Issue) Key() datasource.ChapterKey {
+	num, _ := a.number()
+	return datasource.NewChapterKey("", num)
+}
+
+func (a *Issue) number() (float32, bool) {
+	num, err := strconv.ParseFloat(a.chapter.Chapter.String(), 32)
+	if err != nil {
+		return 0, false
+	}
+	return float32(num), true
 }
 
 // (*mangadexv5.Chapter)(0xc00045a000)({

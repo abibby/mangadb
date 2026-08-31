@@ -4,14 +4,13 @@ import (
 	"context"
 	"log"
 
-	"github.com/abibby/salusa/database/dbtest"
-	"github.com/abibby/salusa/database/dialects/sqlite"
-	"github.com/abibby/salusa/email/emailtest"
-	"github.com/abibby/salusa/event"
+	"abibby.com/salusa/database/dbtest"
+	"abibby.com/salusa/database/dialects/sqlite"
+	"abibby.com/salusa/email/emailtest"
+	"abibby.com/salusa/testing/kerneltest"
 	"github.com/abibby/icbmdb/app"
 	"github.com/abibby/icbmdb/config"
 	"github.com/abibby/icbmdb/migrations"
-	"github.com/abibby/salusa/testing/kerneltest"
 	"github.com/jmoiron/sqlx"
 	_ "modernc.org/sqlite"
 )
@@ -43,5 +42,4 @@ var Kernel = kerneltest.NewTestKernelFactory(app.Kernel, &config.Config{
 
 	Database: sqlite.NewConfig(":memory:"),
 	Mail:     emailtest.NewTestMailerConfig(),
-	Queue:    event.NewChannelQueueConfig(),
 })

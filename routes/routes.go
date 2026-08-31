@@ -1,12 +1,12 @@
 package routes
 
 import (
+	"abibby.com/salusa/auth"
+	"abibby.com/salusa/openapidoc"
+	"abibby.com/salusa/request"
+	"abibby.com/salusa/router"
+	"abibby.com/salusa/view"
 	"github.com/abibby/icbmdb/app/models"
-	"github.com/abibby/salusa/auth"
-	"github.com/abibby/salusa/openapidoc"
-	"github.com/abibby/salusa/request"
-	"github.com/abibby/salusa/router"
-	"github.com/abibby/salusa/view"
 	"github.com/google/uuid"
 )
 

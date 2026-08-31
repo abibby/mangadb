@@ -17,36 +17,36 @@ func Update() error {
 		},
 	}
 	i := &models.Issue{}
-	for _, d := range datasource.Datasources() {
-		id := d.ID(&s.DatasourceIDs)
-		if id == "" {
-			continue
-		}
+	// for _, d := range datasource.Datasources() {
+	// 	id := d.ID(&s.DatasourceIDs)
+	// 	if id == "" {
+	// 		continue
+	// 	}
 
-		applier, err := d.Series(id)
-		if err != nil {
-			return err
-		}
+	// 	applier, err := d.Series(id)
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-		err = applier.ApplyData(s)
-		if err != nil {
-			return err
-		}
+	// 	err = applier.ApplyData(s)
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-		issuesAppliers, err := applier.Issues()
-		if err != nil {
-			return err
-		}
+	// 	issuesAppliers, err := applier.Issues()
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-		for _, issueApplier := range issuesAppliers[:1] {
-			err = issueApplier.ApplyData(i)
-			if err != nil {
-				return err
-			}
-		}
+	// 	for _, issueApplier := range issuesAppliers[:1] {
+	// 		err = issueApplier.ApplyData(i)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	}
 
-		d.UpdateTimestamp(&s.DatasourceIDs)
-	}
+	// 	d.UpdateTimestamp(&s.DatasourceIDs)
+	// }
 
 	spew.Dump(s)
 	spew.Dump(i)

@@ -3,11 +3,18 @@ package app
 import (
 	"context"
 
-	"github.com/abibby/salusa/event"
-	"github.com/abibby/salusa/event/cron"
-	"github.com/abibby/salusa/kernel"
-	"github.com/abibby/salusa/openapidoc"
-	"github.com/abibby/salusa/salusadi"
+	"abibby.com/salusa/auth"
+	"abibby.com/salusa/clog"
+	"abibby.com/salusa/database"
+	"abibby.com/salusa/email"
+	"abibby.com/salusa/event"
+	"abibby.com/salusa/event/cron"
+	"abibby.com/salusa/kernel"
+	"abibby.com/salusa/openapidoc"
+	"abibby.com/salusa/openapidoc/openapidocdi"
+	"abibby.com/salusa/pubsub/channelpubsub"
+	"abibby.com/salusa/request"
+	"abibby.com/salusa/view"
 	"github.com/abibby/icbmdb/app/events"
 	"github.com/abibby/icbmdb/app/jobs"
 	"github.com/abibby/icbmdb/app/models"
@@ -16,21 +23,25 @@ import (
 	"github.com/abibby/icbmdb/migrations"
 	"github.com/abibby/icbmdb/resources"
 	"github.com/abibby/icbmdb/routes"
-	"github.com/abibby/salusa/view"
 	"github.com/go-openapi/spec"
-	"github.com/google/uuid"
 )
 
 var Kernel = kernel.New(
 	kernel.Config(config.Load),
 	kernel.Bootstrap(
-		salusadi.Register[*models.User](migrations.Use()),
 		view.Register(resources.Content, "**/*.html"),
 		providers.Register,
-		func(ctx context.Context) error {
-			openapidoc.RegisterFormat[uuid.UUID]("uuid")
-			return nil
-		},
+		kernel.Register(func(ctx context.Context, c *config.Config) {
+			database.Register(ctx, c.Database, migrations.Use())
+			email.Register(ctx, c.Mail)
+			channelpubsub.Register(ctx)
+
+			clog.RegisterDefault(ctx)
+			request.Register(ctx)
+			auth.Register[*models.User](ctx)
+			event.Register(ctx)
+			openapidocdi.Register(ctx)
+		}),
 	),
 	kernel.Services(
 		cron.Service().

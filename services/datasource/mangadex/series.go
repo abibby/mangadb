@@ -1,10 +1,10 @@
 package mangadex
 
 import (
+	"abibby.com/salusa/slices"
 	"github.com/abibby/icbmdb/app/models"
 	"github.com/abibby/icbmdb/services/datasource"
 	"github.com/abibby/mangadexv5"
-	"github.com/abibby/salusa/slices"
 )
 
 type Series struct {
@@ -20,7 +20,7 @@ func (a *Series) ApplyData(s *models.Series) error {
 	s.Title = a.series.Title.String()
 	s.Aliases = slices.Map(a.series.AltTitles, mangadexv5.LangMap.String)
 
-	datasource.ApplySeriesID(s, a.series.Links.EnglishTranslationURL)
+	// datasource.ApplySeriesID(s, a.series.Links.EnglishTranslationURL)
 	return nil
 }
 
