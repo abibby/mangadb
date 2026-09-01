@@ -30,6 +30,37 @@ where
 	"source" = 'mangadex'
 	and "data_type" = 'chapter_list'
 `)
+
+			/*
+				select
+					raw_payload ->> 'chapterId' as "id",
+					series_id,
+					REGEXP_REPLACE(raw_payload ->> 'name', '^#', '')::float as "chapter",
+					REGEXP_REPLACE(raw_payload ->> 'subTitle', '^[^:]+\d+:', '') as "title",
+					to_timestamp((raw_payload ->> 'startTimeStamp')::integer) as "created_at"
+				from (
+					select
+						source_series_id as "series_id",
+						chapter.element as raw_payload
+					from
+						api_responses,
+						jsonb_array_elements(raw_payload #> '{chapterListGroup,0,firstChapterList}') as chapter(element)
+					where
+						"source" = 'mangaplus'
+						and "data_type" = 'series'
+					union all
+					select
+						source_series_id as "series_id",
+						chapter.element as raw_payload
+					from
+						api_responses,
+						jsonb_array_elements(raw_payload #> '{chapterListGroup,1,lastChapterList}') as chapter(element)
+					where
+						"source" = 'mangaplus'
+						and "data_type" = 'series'
+
+				)
+			*/
 			return err
 		}),
 		Down: schema.Run(func(ctx context.Context, tx database.DB) error {

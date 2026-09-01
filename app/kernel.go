@@ -22,6 +22,8 @@ import (
 	"github.com/abibby/icbmdb/resources"
 	"github.com/abibby/icbmdb/routes"
 	"github.com/abibby/icbmdb/services/datasource/mangadex"
+	"github.com/abibby/icbmdb/services/datasource/mangaplus"
+	"github.com/abibby/icbmdb/services/datasource/viz"
 	"github.com/go-openapi/spec"
 )
 
@@ -42,11 +44,15 @@ var Kernel = kernel.New(
 			openapidocdi.Register(ctx)
 
 			mangadex.Register(ctx)
+			mangaplus.Register(ctx)
+			viz.Register(ctx)
 		}),
 	),
 	kernel.Services(
 		event.Service(
 			event.NewListener[*jobs.Mangadex](),
+			event.NewListener[*jobs.MangaPlus](),
+			event.NewListener[*jobs.Viz](),
 		),
 	),
 	kernel.InitRoutes(routes.InitRoutes),

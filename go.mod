@@ -6,18 +6,25 @@ replace github.com/abibby/mangadexv5 => ../mangadexv5
 
 require (
 	abibby.com/salusa v0.24.0
-	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
+	github.com/abibby/mangadexv5 v0.5.0
+	github.com/ericchiang/css v1.4.0
 	github.com/go-openapi/spec v0.22.9
 	github.com/google/uuid v1.6.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/joho/godotenv v1.5.1
+	go.uber.org/ratelimit v0.3.1
+	golang.org/x/net v0.58.0
 	google.golang.org/protobuf v1.36.12
 	modernc.org/sqlite v1.57.0
 )
 
 require (
+	github.com/abibby/nulls v1.1.0 // indirect
+	github.com/benbjohnson/clock v1.3.5 // indirect
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dominikbraun/graph v0.23.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/dyninc/qstring v0.0.0-20160719172318-ab5840a88e81 // indirect
 	github.com/go-mail/mail v2.3.1+incompatible // indirect
 	github.com/go-openapi/jsonpointer v1.0.0 // indirect
 	github.com/go-openapi/jsonreference v1.0.0 // indirect
@@ -35,6 +42,7 @@ require (
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/mattn/go-sqlite3 v1.14.50 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect

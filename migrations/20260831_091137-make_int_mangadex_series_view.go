@@ -29,6 +29,17 @@ where
 	"source" = 'mangadex'
 	and "data_type" = 'series'
 `)
+			/*
+				select
+					(raw_payload #>> '{title,titleId}')::varchar as "id",
+					raw_payload #>> '{title,name}' as "title",
+					raw_payload ->> 'overview' as "description"
+				from
+					api_responses
+				where
+					"source" = 'mangaplus'
+					and "data_type" = 'series';
+			*/
 			return err
 		}),
 		Down: schema.Run(func(ctx context.Context, tx database.DB) error {

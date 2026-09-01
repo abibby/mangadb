@@ -4,11 +4,16 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"time"
 
+	"abibby.com/salusa/database"
+	"abibby.com/salusa/database/model"
 	"abibby.com/salusa/di"
+	"github.com/abibby/icbmdb/app/models"
 	"github.com/abibby/icbmdb/services/datasource/mangaplus/mpproto"
 )
 
@@ -29,15 +34,39 @@ func Register(ctx context.Context) {
 		}), nil
 	})
 }
-func (c *Client) TitleDetailsV3(id string) (*mpproto.TitleDetailView, error) {
 
-	result, err := c.proto.Get("https://jumpg-webapi.tokyo-cdn.com/api/title_detailV3?title_id=%s", id)
+// Series implements [datasource.Datasource].
+func (c *Client) Series(ctx context.Context, tx database.DB, id string) error {
+
+	u := fmt.Sprintf("https://jumpg-webapi.tokyo-cdn.com/api/title_detailV3?title_id=%s", id)
+	result, err := c.proto.Get(u)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return result.GetTitleDetailView(), nil
-}
 
+	r, err := models.ApiResponseQuery(ctx).Where("url", "=", u).First(tx)
+	if err != nil {
+		return err
+	}
+
+	if r == nil {
+		r = &models.APIResponse{
+			Source:         "mangaplus",
+			SourceSeriesID: id,
+			DataType:       "series",
+			URL:            u,
+			Page:           0,
+		}
+	}
+
+	b, err := json.Marshal(result.GetTitleDetailView())
+	if err != nil {
+		return err
+	}
+	r.SyncJobID = ""
+	r.RawPayload = b
+	return model.SaveContext(ctx, tx, r)
+}
 func (c *Client) Register(deviceID string) (*mpproto.RegistrationData, error) {
 
 	deviceToken := md5.New()

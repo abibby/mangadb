@@ -6,8 +6,10 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/google/uuid"
+	"go.uber.org/ratelimit"
 	proto "google.golang.org/protobuf/proto"
 )
 
@@ -19,12 +21,14 @@ import (
 type Client struct {
 	sessionToken string
 	httpClient   http.Client
+	limiter      ratelimit.Limiter
 }
 
 func NewClient(c *http.Client) *Client {
 	return &Client{
 		sessionToken: uuid.NewString(),
 		httpClient:   *c,
+		limiter:      ratelimit.New(20, ratelimit.Per(time.Minute)),
 	}
 }
 
