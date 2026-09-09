@@ -12,10 +12,10 @@ import (
 	"sync"
 	"time"
 
+	"abibby.com/mangadb/app/models"
 	"abibby.com/salusa/database"
 	"abibby.com/salusa/database/model"
 	"abibby.com/salusa/di"
-	"github.com/abibby/icbmdb/app/models"
 	"github.com/abibby/mangadexv5"
 	"github.com/google/uuid"
 	"go.uber.org/ratelimit"

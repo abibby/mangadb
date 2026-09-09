@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
+	"abibby.com/mangadb/app/providers"
 	"abibby.com/salusa/database/builder"
 	"abibby.com/salusa/database/model/modeldi"
-	"github.com/abibby/icbmdb/app/providers"
 	"github.com/google/uuid"
 )
 

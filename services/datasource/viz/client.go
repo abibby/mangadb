@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"abibby.com/mangadb/app/models"
 	"abibby.com/salusa/database"
 	"abibby.com/salusa/di"
-	"github.com/abibby/icbmdb/app/models"
 	"github.com/abibby/nulls"
 	"github.com/ericchiang/css"
 	"go.uber.org/ratelimit"

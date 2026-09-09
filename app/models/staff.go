@@ -3,9 +3,9 @@ package models
 import (
 	"context"
 
+	"abibby.com/mangadb/app/providers"
 	"abibby.com/salusa/database/builder"
 	"abibby.com/salusa/database/model/modeldi"
-	"github.com/abibby/icbmdb/app/providers"
 )
 
 type Staff struct {

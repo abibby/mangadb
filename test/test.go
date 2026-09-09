@@ -4,13 +4,13 @@ import (
 	"context"
 	"log"
 
+	"abibby.com/mangadb/app"
+	"abibby.com/mangadb/config"
+	"abibby.com/mangadb/migrations"
 	"abibby.com/salusa/database/dbtest"
 	"abibby.com/salusa/database/dialects/sqlite"
 	"abibby.com/salusa/email/emailtest"
 	"abibby.com/salusa/testing/kerneltest"
-	"github.com/abibby/icbmdb/app"
-	"github.com/abibby/icbmdb/config"
-	"github.com/abibby/icbmdb/migrations"
 	"github.com/jmoiron/sqlx"
 	_ "modernc.org/sqlite"
 )

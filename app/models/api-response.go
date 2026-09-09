@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
+	"abibby.com/mangadb/app/providers"
 	"abibby.com/salusa/database"
 	"abibby.com/salusa/database/builder"
 	"abibby.com/salusa/database/dialects"
 	"abibby.com/salusa/database/model/mixins"
 	"abibby.com/salusa/database/model/modeldi"
-	"github.com/abibby/icbmdb/app/providers"
 	"github.com/google/uuid"
 )
 

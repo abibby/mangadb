@@ -5,11 +5,11 @@ import (
 	"os"
 	"time"
 
+	"abibby.com/mangadb/app"
+	"abibby.com/mangadb/app/events"
 	"abibby.com/salusa/clog"
 	"abibby.com/salusa/di"
 	"abibby.com/salusa/event"
-	"github.com/abibby/icbmdb/app"
-	"github.com/abibby/icbmdb/app/events"
 )
 
 func main() {

@@ -1,12 +1,12 @@
 package routes
 
 import (
+	"abibby.com/mangadb/app/models"
 	"abibby.com/salusa/auth"
 	"abibby.com/salusa/openapidoc"
 	"abibby.com/salusa/request"
 	"abibby.com/salusa/router"
 	"abibby.com/salusa/view"
-	"github.com/abibby/icbmdb/app/models"
 	"github.com/google/uuid"
 )
 

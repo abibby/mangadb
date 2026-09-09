@@ -3,9 +3,9 @@ package handlers
 import (
 	"context"
 
+	"abibby.com/mangadb/app/models"
 	"abibby.com/salusa/database"
 	"abibby.com/salusa/request"
-	"github.com/abibby/icbmdb/app/models"
 	"github.com/jmoiron/sqlx"
 )
 

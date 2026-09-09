@@ -10,10 +10,10 @@ import (
 	"net/url"
 	"time"
 
+	"abibby.com/mangadb/app/models"
+	"abibby.com/mangadb/services/datasource/mangaplus/mpproto"
 	"abibby.com/salusa/database"
 	"abibby.com/salusa/di"
-	"github.com/abibby/icbmdb/app/models"
-	"github.com/abibby/icbmdb/services/datasource/mangaplus/mpproto"
 )
 
 type Client struct {

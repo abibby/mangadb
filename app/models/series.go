@@ -4,11 +4,11 @@ import (
 	"context"
 	"time"
 
+	"abibby.com/mangadb/app/providers"
 	"abibby.com/salusa/database/builder"
 	"abibby.com/salusa/database/jsoncolumn"
 	"abibby.com/salusa/database/model/mixins"
 	"abibby.com/salusa/database/model/modeldi"
-	"github.com/abibby/icbmdb/app/providers"
 )
 
 type Series struct {

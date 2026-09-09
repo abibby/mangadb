@@ -4,8 +4,8 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/abibby/icbmdb/app/events"
-	"github.com/abibby/icbmdb/services/datasource/mangaplus"
+	"abibby.com/mangadb/app/events"
+	"abibby.com/mangadb/services/datasource/mangaplus"
 	"github.com/jmoiron/sqlx"
 )
 

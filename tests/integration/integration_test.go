@@ -3,7 +3,7 @@ package integration_test
 import (
 	"testing"
 
-	"github.com/abibby/icbmdb/test"
+	"abibby.com/mangadb/test"
 )
 
 func TestIntegration(t *testing.T) {

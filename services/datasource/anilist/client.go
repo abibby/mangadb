@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
+	"abibby.com/mangadb/app/models"
 	"abibby.com/salusa/database"
 	"abibby.com/salusa/di"
 	"abibby.com/salusa/jsonio"
-	"github.com/abibby/icbmdb/app/models"
 	"go.uber.org/ratelimit"
 )
 
