@@ -9,5 +9,5 @@ type VizSeries struct {
 var _ event.Event = (*VizSeries)(nil)
 
 func (e *VizSeries) Type() event.EventType {
-	return "icbmdb:viz-series"
+	return "mangadb:viz-series"
 }

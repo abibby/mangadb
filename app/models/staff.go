@@ -8,7 +8,6 @@ import (
 	"github.com/abibby/icbmdb/app/providers"
 )
 
-//go:generate spice generate:migration
 type Staff struct {
 	BaseModel
 }

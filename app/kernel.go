@@ -8,12 +8,14 @@ import (
 	"abibby.com/salusa/database"
 	"abibby.com/salusa/email"
 	"abibby.com/salusa/event"
+	"abibby.com/salusa/event/cron"
 	"abibby.com/salusa/kernel"
 	"abibby.com/salusa/openapidoc"
 	"abibby.com/salusa/openapidoc/openapidocdi"
 	"abibby.com/salusa/pubsub/channelpubsub"
 	"abibby.com/salusa/request"
 	"abibby.com/salusa/view"
+	"github.com/abibby/icbmdb/app/events"
 	"github.com/abibby/icbmdb/app/jobs"
 	"github.com/abibby/icbmdb/app/models"
 	"github.com/abibby/icbmdb/app/providers"
@@ -21,6 +23,7 @@ import (
 	"github.com/abibby/icbmdb/migrations"
 	"github.com/abibby/icbmdb/resources"
 	"github.com/abibby/icbmdb/routes"
+	"github.com/abibby/icbmdb/services/datasource/anilist"
 	"github.com/abibby/icbmdb/services/datasource/mangadex"
 	"github.com/abibby/icbmdb/services/datasource/mangaplus"
 	"github.com/abibby/icbmdb/services/datasource/viz"
@@ -46,13 +49,18 @@ var Kernel = kernel.New(
 			mangadex.Register(ctx)
 			mangaplus.Register(ctx)
 			viz.Register(ctx)
+			anilist.Register(ctx)
 		}),
 	),
 	kernel.Services(
+		cron.Service().
+			Schedule("0 * * * *", &events.UpdateViewsEvent{}),
 		event.Service(
 			event.NewListener[*jobs.Mangadex](),
 			event.NewListener[*jobs.MangaPlus](),
 			event.NewListener[*jobs.Viz](),
+			event.NewListener[*jobs.Anilist](),
+			event.NewListener[*jobs.UpdateViews](),
 		),
 	),
 	kernel.InitRoutes(routes.InitRoutes),

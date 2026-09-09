@@ -10,8 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-//go:generate spice generate:migration
-type Issue struct {
+type Chapter struct {
 	BaseModel
 
 	// Title of the book.
@@ -83,13 +82,12 @@ type Issue struct {
 	// Volume builder.BelongsTo[*Volume] `json:"volume" db:"volume"`
 	// Staff  builder.HasMany[*Staff]    `json:"staff " db:"Staff "`
 
-	DatasourceIDs
 }
 
 func init() {
-	providers.Add(modeldi.Register[*Issue])
+	providers.Add(modeldi.Register[*Chapter])
 }
 
-func IssueQuery(ctx context.Context) *builder.ModelBuilder[*Issue] {
-	return builder.From[*Issue]().WithContext(ctx)
+func ChapterQuery(ctx context.Context) *builder.ModelBuilder[*Chapter] {
+	return builder.From[*Chapter]().WithContext(ctx)
 }

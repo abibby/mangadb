@@ -8,10 +8,8 @@ import (
 	"github.com/abibby/icbmdb/app/providers"
 )
 
-//go:generate spice generate:migration
 type Volume struct {
 	BaseModel
-	DatasourceIDs
 }
 
 func init() {

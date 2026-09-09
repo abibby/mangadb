@@ -7,21 +7,25 @@ import (
 	"abibby.com/salusa/database/model"
 	"abibby.com/salusa/database/model/modeldi"
 	"github.com/abibby/icbmdb/app/providers"
-	"github.com/google/uuid"
 )
 
 //go:generate spice generate:migration
-type IdMap struct {
+type IDMap struct {
 	model.BaseModel
 
-	SourceID string    `json:"source_id" db:"source_id,primary"`
-	LocalID  uuid.UUID `json:"local_id" db:"local_id,primary"`
+	SourceSeriesID string `json:"source_series_id" db:"source_series_id,primary"`
+	Source         string `json:"source"           db:"source,primary"`
+	SeriesID       string `json:"series_id"        db:"series_id,index"`
+	MatchQuality   int    `json:"match_quality"    db:"match_quality"`
+	Title          string `json:"title"            db:"title"`
+	Author         string `json:"author"           db:"author"`
+	SpineQuality   int    `json:"spine_quality"    db:"spine_quality"`
 }
 
 func init() {
-	providers.Add(modeldi.Register[*IdMap])
+	providers.Add(modeldi.Register[*IDMap])
 }
 
-func IdMapQuery(ctx context.Context) *builder.ModelBuilder[*IdMap] {
-	return builder.From[*IdMap]().WithContext(ctx)
+func IDMapQuery(ctx context.Context) *builder.ModelBuilder[*IDMap] {
+	return builder.From[*IDMap]().WithContext(ctx)
 }

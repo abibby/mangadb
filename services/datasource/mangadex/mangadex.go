@@ -8,6 +8,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -16,8 +17,12 @@ import (
 	"abibby.com/salusa/di"
 	"github.com/abibby/icbmdb/app/models"
 	"github.com/abibby/mangadexv5"
+	"github.com/google/uuid"
 	"go.uber.org/ratelimit"
 )
+
+const MangadexSource = "mangadex"
+const MangadexQuality = 50
 
 type Client struct {
 	httpClient *http.Client
@@ -50,6 +55,19 @@ type PaginatedResponse struct {
 	Total    int    `json:"total"`
 }
 
+type SeriesResponse struct {
+	Data []MDSeries `json:"data"`
+}
+
+type MDSeries struct {
+	ID         string             `json:"id"`
+	Attributes MDSeriesAttributes `json:"attributes"`
+}
+
+type MDSeriesAttributes struct {
+	Links map[string]string `json:"links"`
+}
+
 // Series implements [datasource.Datasource].
 func (m *Client) Series(ctx context.Context, tx database.DB, id string) error {
 	m.mtx.Lock()
@@ -63,23 +81,73 @@ func (m *Client) Series(ctx context.Context, tx database.DB, id string) error {
 		return err
 	}
 
-	r, err := models.ApiResponseQuery(ctx).Where("url", "=", u).First(tx)
+	r := &SeriesResponse{}
+
+	err = json.Unmarshal(m.buffer.Bytes(), r)
 	if err != nil {
 		return err
 	}
 
-	if r == nil {
-		r = &models.APIResponse{
-			Source:         "mangadex",
-			SourceSeriesID: id,
-			DataType:       "series",
-			URL:            u,
-			Page:           0,
+	if len(r.Data) == 0 {
+		return fmt.Errorf("mangadex: no series in response")
+	}
+	s := r.Data[0]
+	// fmt.Printf("%s\n", m.buffer.String())
+	idmap, err := models.IDMapQuery(ctx).Where("source", "=", MangadexSource).Where("source_series_id", "=", s.ID).First(tx)
+	if err != nil {
+		return err
+	}
+	if idmap == nil {
+		idmap = &models.IDMap{
+			SourceSeriesID: s.ID,
+			Source:         MangadexSource,
+			SeriesID:       uuid.NewString(),
+			MatchQuality:   MangadexQuality,
+			Title:          "",
+			Author:         "",
+			SpineQuality:   MangadexQuality,
+		}
+		err = model.SaveContext(ctx, tx, idmap)
+		if err != nil {
+			return err
 		}
 	}
-	r.SyncJobID = ""
-	r.RawPayload = m.buffer.Bytes()
-	return model.SaveContext(ctx, tx, r)
+	mpPrefix := "https://mangaplus.shueisha.co.jp/titles/"
+	for k, v := range s.Attributes.Links {
+		var newMap *models.IDMap
+		switch k {
+		case "al":
+			newMap = &models.IDMap{
+				Source:         "anilist",
+				SourceSeriesID: v,
+				SeriesID:       idmap.SeriesID,
+			}
+		case "engtl":
+			if id, ok := strings.CutPrefix(v, mpPrefix); ok {
+				newMap = &models.IDMap{
+					Source:         "mangaplus",
+					SourceSeriesID: id,
+					SeriesID:       idmap.SeriesID,
+				}
+			}
+		}
+		if newMap != nil {
+			err = model.SaveContext(ctx, tx, newMap)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return models.ApiResponseCreateOrUpdate(ctx, tx, &models.APIResponse{
+		Source:         MangadexSource,
+		SourceSeriesID: id,
+		DataType:       "series",
+		URL:            u,
+		Page:           0,
+		SyncJobID:      "",
+		RawPayload:     m.buffer.Bytes(),
+	})
 }
 
 // Series implements [datasource.Datasource].
@@ -98,7 +166,6 @@ func (m *Client) Chapters(ctx context.Context, tx database.DB, id string) error 
 		m.buffer.Reset()
 
 		u := fmt.Sprintf("https://api.mangadex.org/manga/%s/feed?limit=%d&offset=%d", id, limit, offset)
-		fmt.Println(u, total)
 		err := m.request(http.MethodGet, u, &m.buffer)
 		if err != nil {
 			fails++
@@ -111,27 +178,16 @@ func (m *Client) Chapters(ctx context.Context, tx database.DB, id string) error 
 		}
 		fails = 0
 
-		r, err := models.ApiResponseQuery(ctx).Where("url", "=", u).First(tx)
+		err = models.ApiResponseCreateOrUpdate(ctx, tx, &models.APIResponse{
+			Source:         MangadexSource,
+			SourceSeriesID: id,
+			DataType:       "chapter_list",
+			URL:            u,
+			SyncJobID:      "",
+			RawPayload:     m.buffer.Bytes(),
+			Page:           offset / limit,
+		})
 		if err != nil {
-			return err
-		}
-
-		if r == nil {
-			r = &models.APIResponse{
-				Source:         "mangadex",
-				SourceSeriesID: id,
-				DataType:       "chapter_list",
-				URL:            u,
-				Page:           0,
-			}
-		}
-
-		r.SyncJobID = ""
-		r.RawPayload = m.buffer.Bytes()
-		r.Page = offset / limit
-		err = model.SaveContext(ctx, tx, r)
-		if err != nil {
-			fmt.Println(m.buffer.String())
 			return err
 		}
 
@@ -151,14 +207,13 @@ func (m *Client) Chapters(ctx context.Context, tx database.DB, id string) error 
 func (m *Client) request(method, url string, w io.Writer) error {
 	m.limiter.Take()
 
+	fmt.Println("REQUEST " + url)
+
 	r, err := http.NewRequest(method, url, http.NoBody)
 	if err != nil {
 		return fmt.Errorf("failed to create request: url %s: %w", url, err)
 	}
 
-	// if c.token != nil {
-	// 	r.Header.Add("Authorization", "Bearer "+c.token.Session)
-	// }
 	r.Header.Add("Accept", "application/json")
 	r.Header.Add("Content-Type", "application/json")
 

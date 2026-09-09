@@ -1,12 +1,15 @@
 module github.com/abibby/icbmdb
 
-go 1.26.6
+go 1.27.0
+
+replace abibby.com/salusa => ../salusa
 
 replace github.com/abibby/mangadexv5 => ../mangadexv5
 
 require (
 	abibby.com/salusa v0.24.0
 	github.com/abibby/mangadexv5 v0.5.0
+	github.com/abibby/nulls v1.1.0
 	github.com/ericchiang/css v1.4.0
 	github.com/go-openapi/spec v0.22.9
 	github.com/google/uuid v1.6.0
@@ -19,7 +22,6 @@ require (
 )
 
 require (
-	github.com/abibby/nulls v1.1.0 // indirect
 	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dominikbraun/graph v0.23.0 // indirect

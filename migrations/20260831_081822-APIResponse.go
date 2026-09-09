@@ -1,7 +1,6 @@
 package migrations
 
 import (
-	"abibby.com/salusa/database/dialects"
 	"abibby.com/salusa/database/migrate"
 	"abibby.com/salusa/database/schema"
 )
@@ -18,9 +17,9 @@ func init() {
 			table.String("source")
 			table.String("source_series_id")
 			table.String("data_type")
-			table.String("url")
+			table.String("url").Unique()
 			table.Int("page")
-			table.OfType(dialects.DataType{Name: "jsonb"}, "raw_payload")
+			table.JSON("raw_payload")
 		}),
 		Down: schema.DropIfExists("api_responses"),
 	})

@@ -6,13 +6,16 @@ import (
 
 	"abibby.com/salusa/database/builder"
 	"abibby.com/salusa/database/jsoncolumn"
+	"abibby.com/salusa/database/model/mixins"
 	"abibby.com/salusa/database/model/modeldi"
 	"github.com/abibby/icbmdb/app/providers"
 )
 
-//go:generate spice generate:migration
 type Series struct {
 	BaseModel
+
+	mixins.SoftDelete
+	mixins.Timestamps
 
 	Title       string                   `json:"title"       db:"title"`
 	Aliases     jsoncolumn.Slice[string] `json:"aliases"     db:"aliases"`
@@ -21,11 +24,9 @@ type Series struct {
 	Genre       jsoncolumn.Slice[string] `json:"genre"       db:"genre"`
 	Tags        jsoncolumn.Slice[string] `json:"tags"        db:"tags"`
 
-	DatasourceIDs
-
-	Staff   *builder.HasMany[*Staff]  `json:"staff"`
-	Issues  *builder.HasMany[*Issue]  `json:"issues"`
-	Volumes *builder.HasMany[*Volume] `json:"volumes"`
+	Staff    *builder.HasMany[*Staff]   `json:"staff"`
+	Chapters *builder.HasMany[*Chapter] `json:"chapters"`
+	Volumes  *builder.HasMany[*Volume]  `json:"volumes"`
 }
 
 func init() {

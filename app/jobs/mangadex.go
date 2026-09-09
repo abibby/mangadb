@@ -25,6 +25,7 @@ func (m *Mangadex) Handle(ctx context.Context, e *events.MangadexSeries) error {
 	if err != nil {
 		return err
 	}
+
 	m.Logger.Info("starting finished")
 	return nil
 }

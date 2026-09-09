@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"abibby.com/salusa/database"
-	"abibby.com/salusa/database/model"
 	"abibby.com/salusa/di"
 	"github.com/abibby/icbmdb/app/models"
 	"github.com/abibby/icbmdb/services/datasource/mangaplus/mpproto"
@@ -44,28 +43,19 @@ func (c *Client) Series(ctx context.Context, tx database.DB, id string) error {
 		return err
 	}
 
-	r, err := models.ApiResponseQuery(ctx).Where("url", "=", u).First(tx)
-	if err != nil {
-		return err
-	}
-
-	if r == nil {
-		r = &models.APIResponse{
-			Source:         "mangaplus",
-			SourceSeriesID: id,
-			DataType:       "series",
-			URL:            u,
-			Page:           0,
-		}
-	}
-
 	b, err := json.Marshal(result.GetTitleDetailView())
 	if err != nil {
 		return err
 	}
-	r.SyncJobID = ""
-	r.RawPayload = b
-	return model.SaveContext(ctx, tx, r)
+	return models.ApiResponseCreateOrUpdate(ctx, tx, &models.APIResponse{
+		Source:         "mangaplus",
+		SourceSeriesID: id,
+		DataType:       "series",
+		URL:            u,
+		Page:           0,
+		SyncJobID:      "",
+		RawPayload:     b,
+	})
 }
 func (c *Client) Register(deviceID string) (*mpproto.RegistrationData, error) {
 

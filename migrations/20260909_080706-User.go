@@ -7,7 +7,7 @@ import (
 
 func init() {
 	migrations.Add(&migrate.Migration{
-		Name: "20260831_081824-User",
+		Name: "20260909_080706-User",
 		Up: schema.Create("users", func(table *schema.Blueprint) {
 			table.Blob("id").Primary()
 			table.String("email").Unique()

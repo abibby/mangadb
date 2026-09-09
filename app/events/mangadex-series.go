@@ -11,5 +11,5 @@ type MangadexSeries struct {
 var _ event.Event = (*MangadexSeries)(nil)
 
 func (e *MangadexSeries) Type() event.EventType {
-	return "icbmdb:mangadex-series"
+	return "mangadb:mangadex-series"
 }

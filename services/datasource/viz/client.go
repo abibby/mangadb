@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"abibby.com/salusa/database"
-	"abibby.com/salusa/database/model"
 	"abibby.com/salusa/di"
 	"github.com/abibby/icbmdb/app/models"
 	"github.com/abibby/nulls"
@@ -28,6 +27,7 @@ type Client struct {
 type MangaIndex struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
+	Author      string    `json:"author"`
 	Chapters    []Chapter `json:"chapters"`
 	Volumes     []Volume  `json:"volumes"`
 }
@@ -78,6 +78,10 @@ func (c *Client) Series(ctx context.Context, tx database.DB, id string) error {
 		Volumes:  []Volume{},
 	}
 
+	seriesIntro, err := css.Parse(`#series-intro`)
+	if err != nil {
+		return err
+	}
 	title, err := css.Parse(`#series-intro h2`)
 	if err != nil {
 		return err
@@ -101,6 +105,9 @@ func (c *Client) Series(ctx context.Context, tx database.DB, id string) error {
 	volumeLink, err := css.Parse(`a[href^="/manga-books/manga"]`)
 	if err != nil {
 		return err
+	}
+	for _, ele := range seriesIntro.Select(document) {
+		index.Author = findAuthor(ele)
 	}
 	for _, ele := range title.Select(document) {
 		index.Title = html.UnescapeString(ele.FirstChild.Data)
@@ -150,29 +157,19 @@ func (c *Client) Series(ctx context.Context, tx database.DB, id string) error {
 		}
 	}
 
-	r, err := models.ApiResponseQuery(ctx).Where("url", "=", u).First(tx)
-	if err != nil {
-		return err
-	}
-
-	if r == nil {
-		r = &models.APIResponse{
-			Source:         "mangadex",
-			SourceSeriesID: id,
-			DataType:       "series",
-			URL:            u,
-			Page:           0,
-		}
-	}
-
 	b, err := json.Marshal(index)
 	if err != nil {
 		return err
 	}
-
-	r.SyncJobID = ""
-	r.RawPayload = b
-	return model.SaveContext(ctx, tx, r)
+	return models.ApiResponseCreateOrUpdate(ctx, tx, &models.APIResponse{
+		Source:         "viz",
+		SourceSeriesID: id,
+		DataType:       "series",
+		URL:            u,
+		Page:           0,
+		SyncJobID:      "",
+		RawPayload:     b,
+	})
 }
 
 func chapter(ele *html.Node, vol *Volume) (Chapter, error) {
@@ -216,4 +213,20 @@ func chapter(ele *html.Node, vol *Volume) (Chapter, error) {
 		c.VolumeID = vol.ID
 	}
 	return c, nil
+}
+
+func findAuthor(node *html.Node) string {
+	prefix := "Created by"
+	for c := range node.ChildNodes() {
+		if strings.HasPrefix(c.Data, prefix) {
+			return strings.TrimSpace(html.UnescapeString(c.Data[len(prefix):]))
+		}
+	}
+	for c := range node.ChildNodes() {
+		a := findAuthor(c)
+		if a != "" {
+			return a
+		}
+	}
+	return ""
 }
