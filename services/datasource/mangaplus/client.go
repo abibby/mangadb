@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"abibby.com/mangadb/app/models"
+	"abibby.com/mangadb/services/datasource"
 	"abibby.com/mangadb/services/datasource/mangaplus/mpproto"
 	"abibby.com/salusa/database"
 	"abibby.com/salusa/di"
@@ -48,7 +49,7 @@ func (c *Client) Series(ctx context.Context, tx database.DB, id string) error {
 		return err
 	}
 	return models.ApiResponseCreateOrUpdate(ctx, tx, &models.APIResponse{
-		Source:         "mangaplus",
+		Source:         datasource.MangaplusSource,
 		SourceSeriesID: id,
 		DataType:       "series",
 		URL:            u,

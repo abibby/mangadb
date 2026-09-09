@@ -2,12 +2,11 @@ module abibby.com/mangadb
 
 go 1.27.0
 
-replace abibby.com/salusa => ../salusa
-
-replace github.com/abibby/mangadexv5 => ../mangadexv5
+// replace abibby.com/salusa => ../salusa
+// replace github.com/abibby/mangadexv5 => ../mangadexv5
 
 require (
-	abibby.com/salusa v0.24.0
+	abibby.com/salusa v0.25.0
 	github.com/abibby/mangadexv5 v0.5.0
 	github.com/abibby/nulls v1.1.0
 	github.com/ericchiang/css v1.4.0

@@ -15,7 +15,6 @@ func init() {
 			table.Int("match_quality")
 			table.String("title")
 			table.String("author")
-			table.Int("spine_quality")
 			table.PrimaryKey("source_series_id", "source")
 		}),
 		Down: schema.DropIfExists("id_maps"),

@@ -25,7 +25,7 @@ func main() {
 		os.Exit(1)
 	}
 	go func() {
-		time.Sleep(time.Second)
+		time.Sleep(100 * time.Millisecond)
 
 		dispatch, err := di.Resolve[event.Dispatch](ctx)
 		if err != nil {
@@ -33,7 +33,7 @@ func main() {
 		}
 		es := []event.Event{
 			// &events.MangadexSeries{ID: "32505911-558f-4ce0-9eed-0b4538f29efc"}, // Days Off in the Dragon's Stomach
-			&events.MangadexSeries{ID: "68112dc1-2b80-4f20-beb8-2f2a8716a430"}, // Dandadan
+			// &events.MangadexSeries{ID: "68112dc1-2b80-4f20-beb8-2f2a8716a430"}, // Dandadan
 			// &events.MangadexSeries{ID: "801513ba-a712-498c-8f57-cae55b38cc92"}, // Berserk
 			// &events.MangaPlusSeries{ID: "100171"}, // Dandadan
 			// &events.MangaPlusSeries{ID: "100020"}, // One Piece
@@ -42,7 +42,7 @@ func main() {
 			// &events.VizSeries{ID: "dandadan"},
 			// &events.VizSeries{ID: "one-piece"},
 			// &events.AnilistSeries{ID: "30002"}, // Berserk
-			// &events.AnilistSeries{ID: "132029"}, // Dandadan
+			&events.AnilistSeries{ID: "132029"}, // Dandadan
 			&events.UpdateViewsEvent{},
 		}
 		for _, e := range es {

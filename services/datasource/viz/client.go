@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"abibby.com/mangadb/app/models"
+	"abibby.com/mangadb/services/datasource"
 	"abibby.com/salusa/database"
 	"abibby.com/salusa/di"
 	"github.com/abibby/nulls"
@@ -162,7 +163,7 @@ func (c *Client) Series(ctx context.Context, tx database.DB, id string) error {
 		return err
 	}
 	return models.ApiResponseCreateOrUpdate(ctx, tx, &models.APIResponse{
-		Source:         "viz",
+		Source:         datasource.VizSource,
 		SourceSeriesID: id,
 		DataType:       "series",
 		URL:            u,

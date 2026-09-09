@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"abibby.com/mangadb/app/models"
+	"abibby.com/mangadb/services/datasource"
 	"abibby.com/salusa/database"
 	"abibby.com/salusa/di"
 	"abibby.com/salusa/jsonio"
@@ -155,19 +156,17 @@ func (m *Client) Series(ctx context.Context, tx database.DB, id string) error {
 
 	m.buffer.Reset()
 
-	u := fmt.Sprintf("https://graphql.anilist.co Media(id: %s)", id)
-	err := m.request(seriesQuery, map[string]any{
-		"mediaId": id,
-	}, &m.buffer)
+	err := m.request(seriesQuery, map[string]any{"mediaId": id}, &m.buffer)
 	if err != nil {
+		fmt.Println(m.buffer.String())
 		return err
 	}
 
 	return models.ApiResponseCreateOrUpdate(ctx, tx, &models.APIResponse{
-		Source:         "anilist",
+		Source:         datasource.AnilistSource,
 		SourceSeriesID: id,
 		DataType:       "series",
-		URL:            u,
+		URL:            fmt.Sprintf("https://graphql.anilist.co Media(id: %s)", id),
 		Page:           0,
 		SyncJobID:      "",
 		RawPayload:     m.buffer.Bytes(),
@@ -185,6 +184,7 @@ func (m *Client) request(query string, variables map[string]any, w io.Writer) er
 		return fmt.Errorf("failed to create request: query %s: %w", query, err)
 	}
 
+	r.Header.Add("Accept", "application/json")
 	r.Header.Add("Accept", "application/json")
 	r.Header.Add("Content-Type", "application/json")
 

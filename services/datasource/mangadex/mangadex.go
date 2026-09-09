@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"abibby.com/mangadb/app/models"
+	"abibby.com/mangadb/services/datasource"
 	"abibby.com/salusa/database"
 	"abibby.com/salusa/database/model"
 	"abibby.com/salusa/di"
@@ -20,9 +21,6 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/ratelimit"
 )
-
-const MangadexSource = "mangadex"
-const MangadexQuality = 50
 
 type Client struct {
 	httpClient *http.Client
@@ -93,19 +91,18 @@ func (m *Client) Series(ctx context.Context, tx database.DB, id string) error {
 	}
 	s := r.Data[0]
 	// fmt.Printf("%s\n", m.buffer.String())
-	idmap, err := models.IDMapQuery(ctx).Where("source", "=", MangadexSource).Where("source_series_id", "=", s.ID).First(tx)
+	idmap, err := models.IDMapQuery(ctx).Where("source", "=", datasource.MangadexSource).Where("source_series_id", "=", s.ID).First(tx)
 	if err != nil {
 		return err
 	}
 	if idmap == nil {
 		idmap = &models.IDMap{
 			SourceSeriesID: s.ID,
-			Source:         MangadexSource,
+			Source:         datasource.MangadexSource,
 			SeriesID:       uuid.NewString(),
-			MatchQuality:   MangadexQuality,
+			MatchQuality:   datasource.MangadexQuality,
 			Title:          "",
 			Author:         "",
-			SpineQuality:   MangadexQuality,
 		}
 		err = model.SaveContext(ctx, tx, idmap)
 		if err != nil {
@@ -118,21 +115,23 @@ func (m *Client) Series(ctx context.Context, tx database.DB, id string) error {
 		switch k {
 		case "al":
 			newMap = &models.IDMap{
-				Source:         "anilist",
+				Source:         datasource.AnilistSource,
 				SourceSeriesID: v,
 				SeriesID:       idmap.SeriesID,
+				MatchQuality:   datasource.MangadexQuality,
 			}
 		case "engtl":
 			if id, ok := strings.CutPrefix(v, mpPrefix); ok {
 				newMap = &models.IDMap{
-					Source:         "mangaplus",
+					Source:         datasource.MangaplusSource,
 					SourceSeriesID: id,
 					SeriesID:       idmap.SeriesID,
+					MatchQuality:   datasource.MangadexQuality,
 				}
 			}
 		}
 		if newMap != nil {
-			err = model.SaveContext(ctx, tx, newMap)
+			err = models.IDMapCreateOrUpdate(ctx, tx, newMap)
 			if err != nil {
 				return err
 			}
@@ -140,7 +139,7 @@ func (m *Client) Series(ctx context.Context, tx database.DB, id string) error {
 	}
 
 	return models.ApiResponseCreateOrUpdate(ctx, tx, &models.APIResponse{
-		Source:         MangadexSource,
+		Source:         datasource.MangadexSource,
 		SourceSeriesID: id,
 		DataType:       "series",
 		URL:            u,
@@ -179,7 +178,7 @@ func (m *Client) Chapters(ctx context.Context, tx database.DB, id string) error 
 		fails = 0
 
 		err = models.ApiResponseCreateOrUpdate(ctx, tx, &models.APIResponse{
-			Source:         MangadexSource,
+			Source:         datasource.MangadexSource,
 			SourceSeriesID: id,
 			DataType:       "chapter_list",
 			URL:            u,
