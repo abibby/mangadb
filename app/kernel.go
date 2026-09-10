@@ -56,10 +56,7 @@ var Kernel = kernel.New(
 		cron.Service().
 			Schedule("0 * * * *", &events.UpdateViewsEvent{}),
 		event.Service(
-			event.NewListener[*jobs.Mangadex](),
-			event.NewListener[*jobs.MangaPlus](),
-			event.NewListener[*jobs.Viz](),
-			event.NewListener[*jobs.Anilist](),
+			event.NewListener[*jobs.FetchSeries](),
 			event.NewListener[*jobs.UpdateViews](),
 		),
 	),

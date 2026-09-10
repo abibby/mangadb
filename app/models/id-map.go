@@ -3,11 +3,14 @@ package models
 import (
 	"context"
 
+	"abibby.com/mangadb/app/events"
 	"abibby.com/mangadb/app/providers"
 	"abibby.com/salusa/database"
 	"abibby.com/salusa/database/builder"
 	"abibby.com/salusa/database/model"
 	"abibby.com/salusa/database/model/modeldi"
+	"abibby.com/salusa/di"
+	"abibby.com/salusa/event"
 	"github.com/google/uuid"
 )
 
@@ -80,5 +83,16 @@ func IDMapCreate(ctx context.Context, tx database.DB, quality int, m map[string]
 			return err
 		}
 	}
+	dispatch, err := di.Resolve[event.Dispatch](ctx)
+	if err != nil {
+		return err
+	}
+	for k, v := range m {
+		dispatch(ctx, &events.FetchSeriesEvent{
+			Source: k,
+			ID:     v,
+		})
+	}
+
 	return nil
 }

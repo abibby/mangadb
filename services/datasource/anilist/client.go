@@ -221,9 +221,11 @@ func (m *Client) request(query string, variables map[string]any, w io.Writer) er
 		return fmt.Errorf("failed to create request: query %s: %w", query, err)
 	}
 
-	r.Header.Add("Accept", "application/json")
+	r.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0")
 	r.Header.Add("Accept", "application/json")
 	r.Header.Add("Content-Type", "application/json")
+	r.Header.Add("Origin", "https://studio.apollographql.com")
+	r.Header.Add("Referer", "https://studio.apollographql.com")
 
 	resp, err := m.httpClient.Do(r)
 	if err != nil {
