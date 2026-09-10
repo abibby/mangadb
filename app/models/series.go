@@ -2,25 +2,24 @@ package models
 
 import (
 	"context"
-	"time"
 
 	"abibby.com/mangadb/app/providers"
 	"abibby.com/salusa/database/builder"
 	"abibby.com/salusa/database/jsoncolumn"
-	"abibby.com/salusa/database/model/mixins"
 	"abibby.com/salusa/database/model/modeldi"
 )
 
 type Series struct {
-	BaseModel
+	ViewModel
 
-	mixins.SoftDelete
-	mixins.Timestamps
+	// mixins.SoftDelete
+	// mixins.Timestamps
 
+	ID          string                   `json:"id"          db:"id"`
 	Title       string                   `json:"title"       db:"title"`
 	Aliases     jsoncolumn.Slice[string] `json:"aliases"     db:"aliases"`
 	Description string                   `json:"description" db:"description"`
-	StartDate   time.Time                `json:"start_date"  db:"start_date"`
+	StartDate   any                      `json:"start_date"  db:"start_date"`
 	Genre       jsoncolumn.Slice[string] `json:"genre"       db:"genre"`
 	Tags        jsoncolumn.Slice[string] `json:"tags"        db:"tags"`
 

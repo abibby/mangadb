@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"abibby.com/mangadb/app/handlers"
 	"abibby.com/mangadb/app/models"
 	"abibby.com/salusa/auth"
 	"abibby.com/salusa/openapidoc"
@@ -33,6 +34,11 @@ func InitRoutes(r *router.Router) {
 			}),
 			auth.ResetPasswordName("reset-password"),
 		))
+
+		r.Group("/series", func(r *router.Router) {
+			r.Get("", handlers.SeriesList)
+			r.Get("/{series_id}/chapters", handlers.ChapterList)
+		})
 
 	})
 }

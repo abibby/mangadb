@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"fmt"
 
 	"abibby.com/salusa/database"
 	"abibby.com/salusa/database/model"
@@ -37,4 +38,14 @@ func (m *BaseModel) BeforeSave(ctx context.Context, tx database.DB) error {
 func (m *BaseModel) AfterSave(ctx context.Context, tx database.DB) error {
 	m.ctx = ctx
 	return nil
+}
+
+type ViewModel struct {
+}
+
+func (b *ViewModel) InDatabase() bool {
+	return true
+}
+func (m *ViewModel) BeforeSave(ctx context.Context, tx database.DB) error {
+	return fmt.Errorf("cannot save view")
 }
