@@ -12,6 +12,7 @@ import (
 
 	"abibby.com/mangadb/app/models"
 	"abibby.com/mangadb/services/datasource"
+	"abibby.com/mangadb/version"
 	"abibby.com/salusa/database"
 	"abibby.com/salusa/di"
 	"abibby.com/salusa/jsonio"
@@ -210,6 +211,19 @@ func (m *Client) Series(ctx context.Context, tx database.DB, id string) error {
 	})
 }
 
+type GraphqlError struct {
+	Errors []struct {
+		Message string `json:"message"`
+	} `json:"errors"`
+}
+
+func (e *GraphqlError) Error() string {
+	if len(e.Errors) == 0 {
+		return "unknown error"
+	}
+	return e.Errors[0].Message
+}
+
 func (m *Client) request(query string, variables map[string]any, w io.Writer) error {
 	m.limiter.Take()
 
@@ -221,7 +235,7 @@ func (m *Client) request(query string, variables map[string]any, w io.Writer) er
 		return fmt.Errorf("failed to create request: query %s: %w", query, err)
 	}
 
-	r.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0")
+	r.Header.Add("User-Agent", "mangadb "+version.Version)
 	r.Header.Add("Accept", "application/json")
 	r.Header.Add("Content-Type", "application/json")
 	r.Header.Add("Origin", "https://studio.apollographql.com")
@@ -234,7 +248,12 @@ func (m *Client) request(query string, variables map[string]any, w io.Writer) er
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return fmt.Errorf("request failed: query %s: status %s", query, resp.Status)
+		e := &GraphqlError{}
+		jsonErr := json.NewDecoder(resp.Body).Decode(e)
+		if jsonErr != nil {
+			return fmt.Errorf("failed to unmarshal graphql error: %w", jsonErr)
+		}
+		return e
 	}
 
 	_, err = io.Copy(w, resp.Body)
