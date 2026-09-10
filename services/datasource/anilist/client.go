@@ -3,6 +3,7 @@ package anilist
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -134,6 +135,22 @@ type Client struct {
 	limiter ratelimit.Limiter
 }
 
+type GraphQLResponse struct {
+	Data struct {
+		Media Media `json:"media"`
+	} `json:"data"`
+}
+
+type Media struct {
+	ID            int            `json:"id"`
+	ExternalLinks []ExternalLink `json:"externalLinks"`
+}
+
+type ExternalLink struct {
+	URL      string `json:"url"`
+	Language string `json:"language"`
+}
+
 func New() *Client {
 	return &Client{
 		httpClient: &http.Client{
@@ -158,10 +175,30 @@ func (m *Client) Series(ctx context.Context, tx database.DB, id string) error {
 
 	err := m.request(seriesQuery, map[string]any{"mediaId": id}, &m.buffer)
 	if err != nil {
-		fmt.Println(m.buffer.String())
 		return err
 	}
 
+	r := &GraphQLResponse{}
+
+	err = json.Unmarshal(m.buffer.Bytes(), r)
+	if err != nil {
+		return err
+	}
+
+	s := r.Data.Media
+	ids := map[string]string{
+		datasource.AnilistSource: fmt.Sprint(s.ID),
+	}
+	for _, l := range s.ExternalLinks {
+		if l.Language != "English" {
+			continue
+		}
+		datasource.AddFromURL(l.URL, ids)
+	}
+	err = models.IDMapCreate(ctx, tx, datasource.AnilistQuality, ids)
+	if err != nil {
+		return err
+	}
 	return models.ApiResponseCreateOrUpdate(ctx, tx, &models.APIResponse{
 		Source:         datasource.AnilistSource,
 		SourceSeriesID: id,

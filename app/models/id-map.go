@@ -8,6 +8,7 @@ import (
 	"abibby.com/salusa/database/builder"
 	"abibby.com/salusa/database/model"
 	"abibby.com/salusa/database/model/modeldi"
+	"github.com/google/uuid"
 )
 
 //go:generate spice generate:migration
@@ -18,8 +19,6 @@ type IDMap struct {
 	Source         string `json:"source"           db:"source,primary"`
 	SeriesID       string `json:"series_id"        db:"series_id,index"`
 	MatchQuality   int    `json:"match_quality"    db:"match_quality"`
-	Title          string `json:"title"            db:"title"`
-	Author         string `json:"author"           db:"author"`
 }
 
 func init() {
@@ -30,32 +29,56 @@ func IDMapQuery(ctx context.Context) *builder.ModelBuilder[*IDMap] {
 	return builder.From[*IDMap]().WithContext(ctx)
 }
 
-func IDMapCreateOrUpdate(ctx context.Context, tx database.DB, r *IDMap) error {
-	existing, err := IDMapQuery(ctx).Where("source", "=", r.Source).Where("source_series_id", "=", r.SourceSeriesID).First(tx)
+func IDMapCreate(ctx context.Context, tx database.DB, quality int, m map[string]string) error {
+	if len(m) == 0 {
+		return nil
+	}
+	q := IDMapQuery(ctx)
+
+	for k, v := range m {
+		q.Or(func(q *builder.Conditions) {
+			q.Where("source", "=", k).Where("source_series_id", "=", v)
+		})
+	}
+	idMaps, err := q.Get(tx)
 	if err != nil {
 		return err
 	}
-	changes := false
-	if existing == nil {
-		existing = r
-		changes = true
-	} else {
-		if existing.MatchQuality < r.MatchQuality {
-			existing.SeriesID = r.SeriesID
-			existing.MatchQuality = r.MatchQuality
-			changes = true
-		}
-		if existing.Title != r.Title {
-			existing.Title = r.Title
-			changes = true
-		}
-		if existing.Author != r.Author {
-			existing.Author = r.Author
-			changes = true
+
+	seriesID := ""
+
+	idMapMap := map[string]*IDMap{}
+	for _, idMap := range idMaps {
+		idMapMap[idMap.Source] = idMap
+		if seriesID == "" {
+			seriesID = idMap.SeriesID
+		} else if seriesID != idMap.SeriesID {
+			panic("do something here")
 		}
 	}
-	if !changes {
-		return nil
+	if seriesID == "" {
+		seriesID = uuid.NewString()
 	}
-	return model.SaveContext(ctx, tx, r)
+
+	for k, v := range m {
+		idMap, ok := idMapMap[k]
+		if ok {
+			if idMap.MatchQuality < quality {
+				idMap.SeriesID = seriesID
+				idMap.MatchQuality = quality
+			}
+		} else {
+			idMap = &IDMap{
+				SourceSeriesID: v,
+				Source:         k,
+				SeriesID:       seriesID,
+				MatchQuality:   quality,
+			}
+		}
+		err = model.SaveContext(ctx, tx, idMap)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

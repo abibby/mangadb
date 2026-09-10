@@ -19,7 +19,7 @@ type UpdateViews struct {
 func (m *UpdateViews) Handle(ctx context.Context, e *events.UpdateViewsEvent) error {
 	m.Logger.Info("Started updating views")
 
-	views := []string{
+	m.updateViews(ctx, []string{
 		"int_mangadex_series",
 		"int_mangaplus_series",
 		"int_viz_series",
@@ -27,8 +27,16 @@ func (m *UpdateViews) Handle(ctx context.Context, e *events.UpdateViewsEvent) er
 		"int_mangadex_chapter",
 		"int_mangaplus_chapter",
 		"int_viz_chapter",
-	}
+	})
 
+	m.updateViews(ctx, []string{
+		"series",
+	})
+
+	m.Logger.Info("Finished updating views")
+	return nil
+}
+func (m *UpdateViews) updateViews(ctx context.Context, views []string) {
 	wg := sync.WaitGroup{}
 	for _, v := range views {
 		wg.Go(func() {
@@ -39,7 +47,4 @@ func (m *UpdateViews) Handle(ctx context.Context, e *events.UpdateViewsEvent) er
 		})
 	}
 	wg.Wait()
-
-	m.Logger.Info("Finished updating views")
-	return nil
 }

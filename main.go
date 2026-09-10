@@ -42,7 +42,7 @@ func main() {
 			// &events.VizSeries{ID: "dandadan"},
 			// &events.VizSeries{ID: "one-piece"},
 			// &events.AnilistSeries{ID: "30002"}, // Berserk
-			&events.AnilistSeries{ID: "132029"}, // Dandadan
+			// &events.AnilistSeries{ID: "132029"}, // Dandadan
 			&events.UpdateViewsEvent{},
 		}
 		for _, e := range es {

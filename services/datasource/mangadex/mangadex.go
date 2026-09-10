@@ -8,17 +8,14 @@ import (
 	"io"
 	"math"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
 	"abibby.com/mangadb/app/models"
 	"abibby.com/mangadb/services/datasource"
 	"abibby.com/salusa/database"
-	"abibby.com/salusa/database/model"
 	"abibby.com/salusa/di"
 	"github.com/abibby/mangadexv5"
-	"github.com/google/uuid"
 	"go.uber.org/ratelimit"
 )
 
@@ -90,52 +87,20 @@ func (m *Client) Series(ctx context.Context, tx database.DB, id string) error {
 		return fmt.Errorf("mangadex: no series in response")
 	}
 	s := r.Data[0]
-	// fmt.Printf("%s\n", m.buffer.String())
-	idmap, err := models.IDMapQuery(ctx).Where("source", "=", datasource.MangadexSource).Where("source_series_id", "=", s.ID).First(tx)
-	if err != nil {
-		return err
+	ids := map[string]string{
+		datasource.MangadexSource: s.ID,
 	}
-	if idmap == nil {
-		idmap = &models.IDMap{
-			SourceSeriesID: s.ID,
-			Source:         datasource.MangadexSource,
-			SeriesID:       uuid.NewString(),
-			MatchQuality:   datasource.MangadexQuality,
-			Title:          "",
-			Author:         "",
-		}
-		err = model.SaveContext(ctx, tx, idmap)
-		if err != nil {
-			return err
-		}
-	}
-	mpPrefix := "https://mangaplus.shueisha.co.jp/titles/"
 	for k, v := range s.Attributes.Links {
-		var newMap *models.IDMap
 		switch k {
 		case "al":
-			newMap = &models.IDMap{
-				Source:         datasource.AnilistSource,
-				SourceSeriesID: v,
-				SeriesID:       idmap.SeriesID,
-				MatchQuality:   datasource.MangadexQuality,
-			}
+			ids[datasource.AnilistSource] = v
 		case "engtl":
-			if id, ok := strings.CutPrefix(v, mpPrefix); ok {
-				newMap = &models.IDMap{
-					Source:         datasource.MangaplusSource,
-					SourceSeriesID: id,
-					SeriesID:       idmap.SeriesID,
-					MatchQuality:   datasource.MangadexQuality,
-				}
-			}
+			datasource.AddFromURL(v, ids)
 		}
-		if newMap != nil {
-			err = models.IDMapCreateOrUpdate(ctx, tx, newMap)
-			if err != nil {
-				return err
-			}
-		}
+	}
+	err = models.IDMapCreate(ctx, tx, datasource.MangadexQuality, ids)
+	if err != nil {
+		return err
 	}
 
 	return models.ApiResponseCreateOrUpdate(ctx, tx, &models.APIResponse{
