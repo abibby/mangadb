@@ -13,8 +13,8 @@ import (
 	"abibby.com/mangadb/app/models"
 	"abibby.com/mangadb/services/datasource"
 	"abibby.com/mangadb/services/datasource/mangaplus/mpproto"
-	"abibby.com/salusa/database"
-	"abibby.com/salusa/di"
+	"gosalusa.com/database"
+	"gosalusa.com/di"
 )
 
 type Client struct {

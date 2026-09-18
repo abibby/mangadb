@@ -3,12 +3,12 @@ package routes
 import (
 	"abibby.com/mangadb/app/handlers"
 	"abibby.com/mangadb/app/models"
-	"abibby.com/salusa/auth"
-	"abibby.com/salusa/openapidoc"
-	"abibby.com/salusa/request"
-	"abibby.com/salusa/router"
-	"abibby.com/salusa/view"
 	"github.com/google/uuid"
+	"gosalusa.com/auth"
+	"gosalusa.com/openapidoc"
+	"gosalusa.com/request"
+	"gosalusa.com/router"
+	"gosalusa.com/view"
 )
 
 func InitRoutes(r *router.Router) {

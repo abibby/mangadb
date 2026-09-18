@@ -13,10 +13,10 @@ import (
 	"abibby.com/mangadb/app/models"
 	"abibby.com/mangadb/services/datasource"
 	"abibby.com/mangadb/version"
-	"abibby.com/salusa/database"
-	"abibby.com/salusa/di"
-	"abibby.com/salusa/jsonio"
 	"go.uber.org/ratelimit"
+	"gosalusa.com/database"
+	"gosalusa.com/di"
+	"gosalusa.com/jsonio"
 )
 
 const seriesQuery = `

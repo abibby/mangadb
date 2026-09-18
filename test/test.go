@@ -7,11 +7,11 @@ import (
 	"abibby.com/mangadb/app"
 	"abibby.com/mangadb/config"
 	"abibby.com/mangadb/migrations"
-	"abibby.com/salusa/database/dbtest"
-	"abibby.com/salusa/database/dialects/sqlite"
-	"abibby.com/salusa/email/emailtest"
-	"abibby.com/salusa/testing/kerneltest"
 	"github.com/jmoiron/sqlx"
+	"gosalusa.com/database/dbtest"
+	"gosalusa.com/database/dialects/sqlite"
+	"gosalusa.com/email/emailtest"
+	"gosalusa.com/testing/kerneltest"
 	_ "modernc.org/sqlite"
 )
 

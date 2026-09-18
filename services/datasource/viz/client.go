@@ -11,12 +11,12 @@ import (
 
 	"abibby.com/mangadb/app/models"
 	"abibby.com/mangadb/services/datasource"
-	"abibby.com/salusa/database"
-	"abibby.com/salusa/di"
 	"github.com/abibby/nulls"
 	"github.com/ericchiang/css"
 	"go.uber.org/ratelimit"
 	"golang.org/x/net/html"
+	"gosalusa.com/database"
+	"gosalusa.com/di"
 )
 
 type Client struct {

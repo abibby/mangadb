@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"abibby.com/mangadb/app/providers"
-	"abibby.com/salusa/database/builder"
-	"abibby.com/salusa/database/model/modeldi"
+	"gosalusa.com/database/builder"
+	"gosalusa.com/database/model/modeldi"
 )
 
 type Chapter struct {

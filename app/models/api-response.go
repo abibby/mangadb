@@ -7,12 +7,12 @@ import (
 	"time"
 
 	"abibby.com/mangadb/app/providers"
-	"abibby.com/salusa/database"
-	"abibby.com/salusa/database/builder"
-	"abibby.com/salusa/database/dialects"
-	"abibby.com/salusa/database/model/mixins"
-	"abibby.com/salusa/database/model/modeldi"
 	"github.com/google/uuid"
+	"gosalusa.com/database"
+	"gosalusa.com/database/builder"
+	"gosalusa.com/database/dialects"
+	"gosalusa.com/database/model/mixins"
+	"gosalusa.com/database/model/modeldi"
 )
 
 //go:generate spice generate:migration

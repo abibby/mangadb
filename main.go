@@ -7,9 +7,9 @@ import (
 
 	"abibby.com/mangadb/app"
 	"abibby.com/mangadb/app/events"
-	"abibby.com/salusa/clog"
-	"abibby.com/salusa/di"
-	"abibby.com/salusa/event"
+	"gosalusa.com/clog"
+	"gosalusa.com/di"
+	"gosalusa.com/event"
 )
 
 func main() {

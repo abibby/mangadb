@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"abibby.com/mangadb/app/models"
-	"abibby.com/salusa/database"
-	"abibby.com/salusa/request"
 	"github.com/jmoiron/sqlx"
+	"gosalusa.com/database"
+	"gosalusa.com/request"
 )
 
 type ChapterListRequest struct {

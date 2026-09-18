@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"abibby.com/salusa/database"
-	"abibby.com/salusa/database/model"
 	"github.com/google/uuid"
+	"gosalusa.com/database"
+	"gosalusa.com/database/model"
 )
 
 type BaseModel struct {

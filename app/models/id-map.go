@@ -5,13 +5,13 @@ import (
 
 	"abibby.com/mangadb/app/events"
 	"abibby.com/mangadb/app/providers"
-	"abibby.com/salusa/database"
-	"abibby.com/salusa/database/builder"
-	"abibby.com/salusa/database/model"
-	"abibby.com/salusa/database/model/modeldi"
-	"abibby.com/salusa/di"
-	"abibby.com/salusa/event"
 	"github.com/google/uuid"
+	"gosalusa.com/database"
+	"gosalusa.com/database/builder"
+	"gosalusa.com/database/model"
+	"gosalusa.com/database/model/modeldi"
+	"gosalusa.com/di"
+	"gosalusa.com/event"
 )
 
 //go:generate spice generate:migration

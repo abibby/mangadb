@@ -6,7 +6,6 @@ go 1.27.0
 // replace github.com/abibby/mangadexv5 => ../mangadexv5
 
 require (
-	abibby.com/salusa v0.25.0
 	github.com/abibby/mangadexv5 v0.5.0
 	github.com/abibby/nulls v1.1.0
 	github.com/ericchiang/css v1.4.0
@@ -17,6 +16,7 @@ require (
 	go.uber.org/ratelimit v0.3.1
 	golang.org/x/net v0.59.0
 	google.golang.org/protobuf v1.36.12
+	gosalusa.com v0.26.1
 	modernc.org/sqlite v1.57.0
 )
 
@@ -36,6 +36,7 @@ require (
 	github.com/go-openapi/swag/stringutils v0.29.2 // indirect
 	github.com/go-openapi/swag/typeutils v0.29.2 // indirect
 	github.com/go-openapi/swag/yamlutils v0.29.2 // indirect
+	github.com/go-openapi/testify/v2 v2.7.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/lib/pq v1.12.3 // indirect

@@ -4,11 +4,11 @@ import (
 	"errors"
 	"os"
 
-	"abibby.com/salusa/database"
-	"abibby.com/salusa/database/dialects/postgres"
-	"abibby.com/salusa/email"
-	"abibby.com/salusa/env"
 	"github.com/joho/godotenv"
+	"gosalusa.com/database"
+	"gosalusa.com/database/dialects/postgres"
+	"gosalusa.com/email"
+	"gosalusa.com/env"
 )
 
 type Config struct {

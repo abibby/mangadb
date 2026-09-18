@@ -1,7 +1,7 @@
 package events
 
 import (
-	"abibby.com/salusa/event"
+	"gosalusa.com/event"
 )
 
 type FetchSeriesEvent struct {
