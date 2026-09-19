@@ -2,6 +2,8 @@ package datasource
 
 import (
 	"strings"
+
+	"abibby.com/mangadb/app/events"
 )
 
 // Quality
@@ -21,11 +23,25 @@ const MangaplusQuality = 50
 const VizSource = "viz"
 const VizQuality = 51
 
-func AddFromURL(u string, ids map[string]string) {
+func Get(u string) (*events.FetchSeriesEvent, bool) {
 	if id, ok := strings.CutPrefix(u, "https://mangaplus.shueisha.co.jp/titles/"); ok {
-		ids[MangaplusSource] = id
+		return &events.FetchSeriesEvent{
+			Source: MangaplusSource,
+			ID:     id,
+		}, true
 	}
 	if id, ok := strings.CutPrefix(u, "https://www.viz.com/shonenjump/chapters/"); ok {
-		ids[VizSource] = id
+		return &events.FetchSeriesEvent{
+			Source: VizSource,
+			ID:     id,
+		}, true
 	}
+	if rest, ok := strings.CutPrefix(u, "https://anilist.co/manga/"); ok {
+		parts := strings.SplitN(rest, "/", 2)
+		return &events.FetchSeriesEvent{
+			Source: AnilistSource,
+			ID:     parts[0],
+		}, true
+	}
+	return nil, false
 }

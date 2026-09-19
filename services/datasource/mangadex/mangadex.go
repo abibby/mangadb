@@ -95,7 +95,10 @@ func (m *Client) Series(ctx context.Context, tx database.DB, id string) error {
 		case "al":
 			ids[datasource.AnilistSource] = v
 		case "engtl":
-			datasource.AddFromURL(v, ids)
+			e, ok := datasource.Get(v)
+			if ok {
+				ids[e.Source] = e.ID
+			}
 		}
 	}
 	err = models.IDMapCreate(ctx, tx, datasource.MangadexQuality, ids)

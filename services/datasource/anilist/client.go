@@ -194,7 +194,10 @@ func (m *Client) Series(ctx context.Context, tx database.DB, id string) error {
 		if l.Language != "English" {
 			continue
 		}
-		datasource.AddFromURL(l.URL, ids)
+		e, ok := datasource.Get(l.URL)
+		if ok {
+			ids[e.Source] = e.ID
+		}
 	}
 	err = models.IDMapCreate(ctx, tx, datasource.AnilistQuality, ids)
 	if err != nil {

@@ -25,7 +25,7 @@ type FetchSeries struct {
 }
 
 func (m *FetchSeries) Handle(ctx context.Context, e *events.FetchSeriesEvent) error {
-	resp, err := models.ApiResponseQuery(ctx).Where("source", "=", e.Source).Where("source_series_id", "=", e.ID).Dump().First(m.DB)
+	resp, err := models.ApiResponseQuery(ctx).Where("source", "=", e.Source).Where("source_series_id", "=", e.ID).First(m.DB)
 	if err != nil {
 		return err
 	}

@@ -23,9 +23,11 @@ type Series struct {
 	Genre       jsoncolumn.Slice[string] `json:"genre"       db:"genre"`
 	Tags        jsoncolumn.Slice[string] `json:"tags"        db:"tags"`
 
-	Staff    *builder.HasMany[*Staff]   `json:"staff"`
-	Chapters *builder.HasMany[*Chapter] `json:"chapters"`
-	Volumes  *builder.HasMany[*Volume]  `json:"volumes"`
+	IDMaps *builder.HasMany[*IDMap] `foreign:"series_id" json:"ids"`
+
+	// Staff    *builder.HasMany[*Staff]   `json:"staff"`
+	// Chapters *builder.HasMany[*Chapter] `json:"chapters"`
+	// Volumes  *builder.HasMany[*Volume]  `json:"volumes"`
 }
 
 func init() {
