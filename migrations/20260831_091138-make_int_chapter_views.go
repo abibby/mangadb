@@ -36,7 +36,7 @@ select
 	raw_payload ->> 'chapterId' as "id",
 	series_id,
 	REGEXP_REPLACE(REGEXP_REPLACE(raw_payload ->> 'name', '^#', ''), '-', '.')::float as "chapter",
-	REGEXP_REPLACE(raw_payload ->> 'subTitle', '^[^:]+\d+:', '') as "title",
+	TRIM(REGEXP_REPLACE(raw_payload ->> 'subTitle', '^[^:]+\d+:', '')) as "title",
 	to_timestamp((raw_payload ->> 'startTimeStamp')::integer) as "created_at"
 from (
 	select

@@ -43,5 +43,12 @@ func Get(u string) (*events.FetchSeriesEvent, bool) {
 			ID:     parts[0],
 		}, true
 	}
+	if rest, ok := strings.CutPrefix(u, "https://mangadex.org/title/"); ok {
+		parts := strings.SplitN(rest, "/", 2)
+		return &events.FetchSeriesEvent{
+			Source: MangadexSource,
+			ID:     parts[0],
+		}, true
+	}
 	return nil, false
 }

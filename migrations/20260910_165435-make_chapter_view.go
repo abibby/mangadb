@@ -58,7 +58,7 @@ SELECT
 FROM stacked_sources_with_id
 GROUP BY series_id, chapter;
 
-CREATE UNIQUE INDEX chapter_series_chapter_idx ON chapter (series_id, chapter);
+CREATE UNIQUE INDEX chapter_series_chapter_idx ON chapters (series_id, chapter);
 `),
 		Down: schema.Run(func(ctx context.Context, tx database.DB) error {
 			return nil

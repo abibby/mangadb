@@ -31,6 +31,7 @@ func (m *UpdateViews) Handle(ctx context.Context, e *events.UpdateViewsEvent) er
 
 	m.updateViews(ctx, []string{
 		"series",
+		"chapters",
 	})
 
 	m.Logger.Info("Finished updating views")
