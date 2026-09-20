@@ -101,7 +101,9 @@ var SeriesImport = request.Handler(func(r *SeriesImportRequest) (*SeriesImportRe
 	if err != nil {
 		return nil, err
 	}
-
+	if m == nil {
+		return &SeriesImportResponse{}, nil
+	}
 	return &SeriesImportResponse{
 		SeriesID: m.SeriesID,
 	}, nil

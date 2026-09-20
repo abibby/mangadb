@@ -44,7 +44,19 @@ func (c *Client) Series(ctx context.Context, tx database.DB, id string) error {
 		return err
 	}
 
-	b, err := json.Marshal(result.GetTitleDetailView())
+	view := result.GetTitleDetailView()
+
+	b, err := json.Marshal(view)
+	if err != nil {
+		return err
+	}
+	err = models.CreateImages(ctx, tx,
+		view.GetTitleImageUrl(),
+		view.GetBackgroundImageUrl(),
+		view.GetTitle().GetPortraitImageUrl(),
+		view.GetTitle().GetLandscapeImageUrl(),
+		view.GetTitle().GetFavoriteImageUrl(),
+	)
 	if err != nil {
 		return err
 	}
