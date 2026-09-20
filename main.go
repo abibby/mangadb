@@ -48,6 +48,7 @@ func main() {
 			// &events.FetchSeriesEvent{Source: datasource.AnilistSource, ID: "132029"}, // Dandadan
 			// &events.FetchSeriesEvent{Source: datasource.AnilistSource, ID: "30013"}, // One Piece
 			&events.UpdateViewsEvent{},
+			&events.FetchImagesEvent{},
 		}
 		for _, e := range es {
 			err = dispatch(ctx, e)

@@ -81,6 +81,8 @@ FROM "stacked_sources_with_id"
 GROUP BY "id";
 
 CREATE UNIQUE INDEX series_id_idx ON series (id);
+CREATE INDEX series_title_trgm_idx ON series USING gin (title gin_trgm_ops);
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 `),
 		Down: schema.Run(func(ctx context.Context, tx database.DB) error {
 			return nil

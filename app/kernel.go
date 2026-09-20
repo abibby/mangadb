@@ -54,9 +54,11 @@ var Kernel = kernel.New(
 	),
 	kernel.Services(
 		cron.Service().
-			Schedule("0 * * * *", &events.UpdateViewsEvent{}),
+			Schedule("0 * * * *", &events.UpdateViewsEvent{}).
+			Schedule("0 * * * *", &events.FetchImagesEvent{}),
 		event.Service(
 			event.NewListener[*jobs.FetchSeries](),
+			event.NewListener[*jobs.FetchImages](),
 			event.NewListener[*jobs.UpdateViews](),
 		),
 	),

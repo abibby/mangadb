@@ -6,15 +6,16 @@ import (
 	"abibby.com/mangadb/app/providers"
 	"gosalusa.com/database/builder"
 	"gosalusa.com/database/model/modeldi"
+	"gosalusa.com/nulls/v2"
 )
 
 type Chapter struct {
 	ViewModel
 
-	SeriesID string  `json:"series_id" db:"series_id"`
-	Title    *string `json:"title"     db:"title"`
-	Volume   int     `json:"volume"    db:"volume"`
-	Chapter  float32 `json:"chapter"   db:"chapter"`
+	SeriesID string             `json:"series_id" db:"series_id"`
+	Title    nulls.Null[string] `json:"title"     db:"title"`
+	Volume   nulls.Null[int]    `json:"volume"    db:"volume"`
+	Chapter  float32            `json:"chapter"   db:"chapter"`
 
 	// // Title of the book.
 	// Title string `json:"title" db:"title"`

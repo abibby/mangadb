@@ -38,6 +38,7 @@ func InitRoutes(r *router.Router) {
 		r.Group("/series", func(r *router.Router) {
 			r.Get("", handlers.SeriesList)
 			r.Post("", handlers.SeriesImport)
+			r.Get("/lookup", handlers.SeriesLookup)
 			r.Get("/{series_id}", handlers.SeriesView)
 			r.Get("/{series_id}/chapters", handlers.ChapterList)
 		})

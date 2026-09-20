@@ -2,7 +2,8 @@ module abibby.com/mangadb
 
 go 1.27.0
 
-// replace abibby.com/salusa => ../salusa
+replace gosalusa.com => ../../gosalusa/framework
+
 // replace github.com/abibby/mangadexv5 => ../mangadexv5
 
 require (
@@ -14,6 +15,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/joho/godotenv v1.5.1
 	go.uber.org/ratelimit v0.3.1
+	golang.org/x/image v0.46.0
 	golang.org/x/net v0.59.0
 	google.golang.org/protobuf v1.36.12
 	gosalusa.com v0.26.1

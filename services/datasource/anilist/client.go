@@ -145,11 +145,20 @@ type GraphQLResponse struct {
 type Media struct {
 	ID            int            `json:"id"`
 	ExternalLinks []ExternalLink `json:"externalLinks"`
+	CoverImage    Image          `json:"coverImage"`
+	BannerImage   string         `json:"bannerImage"`
 }
 
 type ExternalLink struct {
 	URL      string `json:"url"`
 	Language string `json:"language"`
+}
+
+type Image struct {
+	ExtraLarge string `json:"extraLarge"`
+	Large      string `json:"large"`
+	Medium     string `json:"medium"`
+	Color      string `json:"color"`
 }
 
 func New() *Client {
@@ -200,6 +209,14 @@ func (m *Client) Series(ctx context.Context, tx database.DB, id string) error {
 		}
 	}
 	err = models.IDMapCreate(ctx, tx, datasource.AnilistQuality, ids)
+	if err != nil {
+		return err
+	}
+
+	err = models.CreateImages(ctx, tx,
+		r.Data.Media.CoverImage.ExtraLarge,
+		r.Data.Media.BannerImage,
+	)
 	if err != nil {
 		return err
 	}

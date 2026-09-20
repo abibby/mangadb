@@ -13,6 +13,9 @@ import (
 )
 
 type SeriesListRequest struct {
+	Query string `query:"q"`
+	URL   string `query:"url"`
+
 	Read database.Read   `inject:""`
 	Ctx  context.Context `inject:""`
 }
@@ -22,7 +25,21 @@ type SeriesListResponse struct {
 
 var SeriesList = request.Handler(func(r *SeriesListRequest) (*SeriesListResponse, error) {
 	series, err := database.Value(r.Read, func(tx *sqlx.Tx) ([]*models.Series, error) {
-		return models.SeriesQuery(r.Ctx).With("IDMaps").Get(tx)
+		q := models.SeriesQuery(r.Ctx).
+			With("IDMaps")
+		if r.Query != "" {
+			q.Where("title", "%", r.Query)
+		}
+		if r.URL != "" {
+			e, ok := datasource.Get(r.URL)
+			if !ok {
+				return nil, fmt.Errorf("site not supported: %s", r.URL)
+			}
+			q.Where("id", "=", models.IDMapQuery(r.Ctx).Select("series_id").Where("source", "=", e.Source).Where("source_series_id", "=", e.ID))
+		}
+		return q.
+			OrderByRaw(`similarity("title", $1) DESC`).
+			Get(tx)
 	})
 	if err != nil {
 		return nil, err
@@ -48,6 +65,9 @@ var SeriesView = request.Handler(func(r *SeriesViewRequest) (*SeriesViewResponse
 	if err != nil {
 		return nil, err
 	}
+	if series == nil {
+		return nil, request.ErrStatusNotFound
+	}
 	return &SeriesViewResponse{
 		Series: series,
 	}, nil
@@ -56,8 +76,8 @@ var SeriesView = request.Handler(func(r *SeriesViewRequest) (*SeriesViewResponse
 type SeriesImportRequest struct {
 	URL string `json:"url"`
 
-	Update database.Update `inject:""`
-	Ctx    context.Context `inject:""`
+	Read database.Read   `inject:""`
+	Ctx  context.Context `inject:""`
 
 	jobs.FetchSeries `inject:""`
 }
@@ -75,7 +95,7 @@ var SeriesImport = request.Handler(func(r *SeriesImportRequest) (*SeriesImportRe
 		return nil, err
 	}
 
-	m, err := database.Value(r.Update, func(tx *sqlx.Tx) (*models.IDMap, error) {
+	m, err := database.Value(r.Read, func(tx *sqlx.Tx) (*models.IDMap, error) {
 		return models.IDMapQuery(r.Ctx).Where("source", "=", e.Source).Where("source_series_id", "=", e.ID).First(tx)
 	})
 	if err != nil {
@@ -84,5 +104,40 @@ var SeriesImport = request.Handler(func(r *SeriesImportRequest) (*SeriesImportRe
 
 	return &SeriesImportResponse{
 		SeriesID: m.SeriesID,
+	}, nil
+})
+
+type SeriesLookupRequest struct {
+	URL string `query:"url"`
+
+	Read database.Read   `inject:""`
+	Ctx  context.Context `inject:""`
+}
+type SeriesLookupResponse struct {
+	SeriesID *string `json:"series_id"`
+}
+
+var SeriesLookup = request.Handler(func(r *SeriesLookupRequest) (*SeriesLookupResponse, error) {
+	e, ok := datasource.Get(r.URL)
+	if !ok {
+		return &SeriesLookupResponse{
+			SeriesID: nil,
+		}, nil
+	}
+
+	m, err := database.Value(r.Read, func(tx *sqlx.Tx) (*models.IDMap, error) {
+		return models.IDMapQuery(r.Ctx).Where("source", "=", e.Source).Where("source_series_id", "=", e.ID).First(tx)
+	})
+	if err != nil {
+		return nil, err
+	}
+	if m == nil {
+		return &SeriesLookupResponse{
+			SeriesID: nil,
+		}, nil
+	}
+
+	return &SeriesLookupResponse{
+		SeriesID: &m.SeriesID,
 	}, nil
 })

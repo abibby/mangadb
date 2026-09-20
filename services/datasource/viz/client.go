@@ -17,6 +17,7 @@ import (
 	"golang.org/x/net/html"
 	"gosalusa.com/database"
 	"gosalusa.com/di"
+	"gosalusa.com/stream"
 )
 
 type Client struct {
@@ -29,6 +30,7 @@ type MangaIndex struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Author      string    `json:"author"`
+	BannerImage string    `json:"banner_image"`
 	Chapters    []Chapter `json:"chapters"`
 	Volumes     []Volume  `json:"volumes"`
 }
@@ -42,9 +44,10 @@ type Chapter struct {
 }
 
 type Volume struct {
-	ID     string `json:"id"`
-	Number int    `json:"number"`
-	Link   string `json:"link"`
+	ID         string `json:"id"`
+	Number     int    `json:"number"`
+	Link       string `json:"link"`
+	CoverImage string `json:"cover_image"`
 }
 
 func New() *Client {
@@ -79,6 +82,10 @@ func (c *Client) Series(ctx context.Context, tx database.DB, id string) error {
 		Volumes:  []Volume{},
 	}
 
+	heroImg, err := css.Parse(`#hero img`)
+	if err != nil {
+		return err
+	}
 	seriesIntro, err := css.Parse(`#series-intro`)
 	if err != nil {
 		return err
@@ -107,6 +114,17 @@ func (c *Client) Series(ctx context.Context, tx database.DB, id string) error {
 	if err != nil {
 		return err
 	}
+	volumeCover, err := css.Parse(`img`)
+	if err != nil {
+		return err
+	}
+	for _, ele := range heroImg.Select(document) {
+		for _, attr := range ele.Attr {
+			if attr.Key == "src" {
+				index.BannerImage = attr.Val
+			}
+		}
+	}
 	for _, ele := range seriesIntro.Select(document) {
 		index.Author = findAuthor(ele)
 	}
@@ -133,6 +151,14 @@ func (c *Client) Series(ctx context.Context, tx database.DB, id string) error {
 				}
 			}
 		}
+		cover := ""
+		for _, link := range volumeCover.Select(volume) {
+			for _, attr := range link.Attr {
+				if attr.Key == "data-original" {
+					cover = attr.Val
+				}
+			}
+		}
 
 		parts := strings.SplitN(strings.TrimPrefix(href, "/manga-books/manga/"+id+"-volume-"), "-", 2)
 		v, err := strconv.Atoi(parts[0])
@@ -143,9 +169,10 @@ func (c *Client) Series(ctx context.Context, tx database.DB, id string) error {
 
 		pathParts := strings.Split(href, "/")
 		vol := Volume{
-			ID:     pathParts[len(pathParts)-2],
-			Number: num.Int(),
-			Link:   "https://www.viz.com" + href,
+			ID:         pathParts[len(pathParts)-2],
+			Number:     num.Int(),
+			Link:       "https://www.viz.com" + href,
+			CoverImage: cover,
 		}
 		index.Volumes = append(index.Volumes, vol)
 
@@ -156,6 +183,16 @@ func (c *Client) Series(ctx context.Context, tx database.DB, id string) error {
 			}
 			index.Chapters = append(index.Chapters, c)
 		}
+	}
+
+	images := stream.Of(index.Volumes).Map(func(v Volume) string {
+		return v.CoverImage
+	}).Slice()
+	images = append(images, index.BannerImage)
+
+	err = models.CreateImages(ctx, tx, images...)
+	if err != nil {
+		return err
 	}
 
 	b, err := json.Marshal(index)
