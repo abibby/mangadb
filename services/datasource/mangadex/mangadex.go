@@ -13,7 +13,7 @@ import (
 
 	"abibby.com/mangadb/app/models"
 	"abibby.com/mangadb/services/datasource"
-	"github.com/abibby/mangadexv5"
+	"abibby.com/mangadb/version"
 	"go.uber.org/ratelimit"
 	"gosalusa.com/database"
 	"gosalusa.com/di"
@@ -42,25 +42,48 @@ func Register(ctx context.Context) {
 	})
 }
 
-type PaginatedResponse struct {
+type Response[T any] struct {
 	Result   string `json:"result"`
 	Response string `json:"response"`
+	Data     []T    `json:"data"`
 	Limit    int    `json:"limit"`
 	Offset   int    `json:"offset"`
 	Total    int    `json:"total"`
 }
 
-type SeriesResponse struct {
-	Data []MDSeries `json:"data"`
+type Manga struct {
+	ID            string              `json:"id"`
+	Attributes    MangaAttributes     `json:"attributes"`
+	Relationships []MangaRelationship `json:"relationships"`
 }
 
-type MDSeries struct {
-	ID         string             `json:"id"`
-	Attributes MDSeriesAttributes `json:"attributes"`
+type MangaRelationship struct {
+	ID         string                      `json:"id"`
+	Type       string                      `json:"type"`
+	Attributes MangaRelationshipAttributes `json:"attributes"`
 }
 
-type MDSeriesAttributes struct {
+type MangaRelationshipAttributes struct {
+	FileName string `json:"fileName"`
+}
+
+type MangaAttributes struct {
 	Links map[string]string `json:"links"`
+}
+
+type Cover struct {
+	ID         string          `json:"id"`
+	Attributes CoverAttributes `json:"attributes"`
+}
+
+type CoverAttributes struct {
+	Volume      string `json:"volume"`
+	FileName    string `json:"fileName"`
+	Description string `json:"description"`
+	Locale      string `json:"locale"`
+	Version     int    `json:"version"`
+	CreatedAt   string `json:"createdAt"`
+	UpdatedAt   string `json:"updatedAt"`
 }
 
 // Series implements [datasource.Datasource].
@@ -70,13 +93,13 @@ func (m *Client) Series(ctx context.Context, tx database.DB, id string) error {
 
 	m.buffer.Reset()
 
-	u := fmt.Sprintf("https://api.mangadex.org/manga?ids[]=%s", id)
+	u := fmt.Sprintf("https://api.mangadex.org/manga?ids[]=%s&includes[]=cover_art", id)
 	err := m.request(http.MethodGet, u, &m.buffer)
 	if err != nil {
 		return err
 	}
 
-	r := &SeriesResponse{}
+	r := &Response[Manga]{}
 
 	err = json.Unmarshal(m.buffer.Bytes(), r)
 	if err != nil {
@@ -106,6 +129,20 @@ func (m *Client) Series(ctx context.Context, tx database.DB, id string) error {
 		return err
 	}
 
+	var imageURLs []string
+	for _, r := range s.Relationships {
+		if r.Type == "cover_art" {
+			imageURLs = append(imageURLs, fmt.Sprintf("https://mangadex.org/covers/%s/%s", s.ID, r.Attributes.FileName))
+			if err != nil {
+				return err
+			}
+		}
+	}
+	err = models.CreateImages(ctx, tx, imageURLs...)
+	if err != nil {
+		return err
+	}
+
 	return models.ApiResponseCreateOrUpdate(ctx, tx, &models.APIResponse{
 		Source:         datasource.MangadexSource,
 		SourceSeriesID: id,
@@ -122,7 +159,6 @@ func (m *Client) Chapters(ctx context.Context, tx database.DB, id string) error 
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
 
-	mangadexv5.NewClient()
 	limit := 100
 	offset := 0
 	total := math.MaxInt
@@ -132,7 +168,7 @@ func (m *Client) Chapters(ctx context.Context, tx database.DB, id string) error 
 	for offset < total {
 		m.buffer.Reset()
 
-		u := fmt.Sprintf("https://api.mangadex.org/manga/%s/feed?limit=%d&offset=%d", id, limit, offset)
+		u := fmt.Sprintf("https://api.mangadex.org/manga/%s/feed?limit=%d&offset=%d&translatedLanguage[]=en", id, limit, offset)
 		err := m.request(http.MethodGet, u, &m.buffer)
 		if err != nil {
 			fails++
@@ -158,7 +194,7 @@ func (m *Client) Chapters(ctx context.Context, tx database.DB, id string) error 
 			return err
 		}
 
-		p := &PaginatedResponse{}
+		p := &Response[struct{}]{}
 
 		err = json.Unmarshal(m.buffer.Bytes(), p)
 		if err != nil {
@@ -168,6 +204,75 @@ func (m *Client) Chapters(ctx context.Context, tx database.DB, id string) error 
 		total = p.Total
 		offset += limit
 	}
+	return nil
+}
+
+// Series implements [datasource.Datasource].
+func (m *Client) Covers(ctx context.Context, tx database.DB, id string) error {
+	m.mtx.Lock()
+	defer m.mtx.Unlock()
+
+	m.buffer.Reset()
+
+	limit := 100
+	offset := 0
+	total := math.MaxInt
+
+	fails := 0
+
+	var imageURLs []string
+	for offset < total {
+		m.buffer.Reset()
+
+		u := fmt.Sprintf("https://api.mangadex.org/cover?manga[]=%s&limit=%d&offset=%d", id, limit, offset)
+		err := m.request(http.MethodGet, u, &m.buffer)
+		if err != nil {
+			fails++
+			if fails > 5 {
+				return err
+			}
+			time.Sleep(time.Second ^ time.Duration(fails))
+			fmt.Println(time.Second ^ time.Duration(fails))
+			continue
+		}
+		fails = 0
+
+		r := &Response[Cover]{}
+
+		err = json.Unmarshal(m.buffer.Bytes(), r)
+		if err != nil {
+			return err
+		}
+
+		for _, r := range r.Data {
+			imageURLs = append(imageURLs, fmt.Sprintf("https://mangadex.org/covers/%s/%s", id, r.Attributes.FileName))
+			if err != nil {
+				return err
+			}
+		}
+
+		err = models.ApiResponseCreateOrUpdate(ctx, tx, &models.APIResponse{
+			Source:         datasource.MangadexSource,
+			SourceSeriesID: id,
+			DataType:       "covers",
+			URL:            u,
+			SyncJobID:      "",
+			RawPayload:     m.buffer.Bytes(),
+			Page:           offset / limit,
+		})
+		if err != nil {
+			return err
+		}
+
+		total = r.Total
+		offset += limit
+	}
+
+	err := models.CreateImages(ctx, tx, imageURLs...)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -181,6 +286,7 @@ func (m *Client) request(method, url string, w io.Writer) error {
 		return fmt.Errorf("failed to create request: url %s: %w", url, err)
 	}
 
+	r.Header.Add("User-Agent", "mangadb "+version.Version)
 	r.Header.Add("Accept", "application/json")
 	r.Header.Add("Content-Type", "application/json")
 

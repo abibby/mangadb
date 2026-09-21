@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
@@ -73,7 +74,7 @@ func (m *FetchImages) Handle(ctx context.Context, e *events.FetchImagesEvent) er
 
 			i, format, err := image.Decode(bytes.NewBuffer(b))
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to decode image %s: %w", img.SourceURL, err)
 			}
 
 			p := "images/" + img.ID.String() + "." + format

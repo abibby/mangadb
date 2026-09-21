@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"abibby.com/mangadb/app/providers"
+	"gosalusa.com/clog"
 	"gosalusa.com/database"
 	"gosalusa.com/database/builder"
 	"gosalusa.com/database/model"
@@ -37,16 +38,20 @@ func ImagesQuery(ctx context.Context) *builder.ModelBuilder[*Image] {
 }
 
 func CreateImages(ctx context.Context, tx database.DB, imageURLs ...string) error {
-	return model.InsertMany(
-		tx,
-		stream.Of(imageURLs).
-			Filter(func(u string) bool {
-				fmt.Println("url", u)
-				return u != ""
-			}).
-			Map(func(u string) *Image {
-				return &Image{SourceURL: u}
-			}).
-			Slice(),
-	)
+	images := stream.Of(imageURLs).
+		Filter(func(u string) bool {
+			fmt.Println("url", u)
+			return u != ""
+		}).
+		Map(func(u string) *Image {
+			return &Image{SourceURL: u}
+		})
+
+	for i := range images.All() {
+		err := model.SaveContext(ctx, tx, i)
+		if err != nil {
+			clog.Use(ctx).Warn("Add image failed", "error", err)
+		}
+	}
+	return nil
 }

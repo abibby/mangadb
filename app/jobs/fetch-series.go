@@ -25,11 +25,15 @@ type FetchSeries struct {
 }
 
 func (m *FetchSeries) Handle(ctx context.Context, e *events.FetchSeriesEvent) error {
-	resp, err := models.ApiResponseQuery(ctx).Where("source", "=", e.Source).Where("source_series_id", "=", e.ID).First(m.DB)
+	exists, err := models.ApiResponseQuery(ctx).
+		Where("source", "=", e.Source).
+		Where("source_series_id", "=", e.ID).
+		// Where("updated_at", "<", time.Now().Add(-10*time.Minute)).
+		Count(m.DB)
 	if err != nil {
 		return err
 	}
-	if resp != nil {
+	if exists > 0 {
 		m.Logger.Info("Fetch series skipped", "source", e.Source, "id", e.ID)
 		return nil
 	}
@@ -47,6 +51,10 @@ func (m *FetchSeries) Handle(ctx context.Context, e *events.FetchSeriesEvent) er
 			return err
 		}
 		err = m.MDClient.Chapters(ctx, m.DB, e.ID)
+		if err != nil {
+			return err
+		}
+		err = m.MDClient.Covers(ctx, m.DB, e.ID)
 		if err != nil {
 			return err
 		}
