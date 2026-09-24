@@ -28,7 +28,8 @@ var SeriesList = request.Handler(func(r *SeriesListRequest) (*SeriesListResponse
 		q := models.SeriesQuery(r.Ctx).
 			With("IDMaps")
 		if r.Query != "" {
-			q.Where("title", "%", r.Query)
+			q.Where("title", "%", r.Query).
+				OrderByRaw(`similarity("title", $1) DESC`)
 		}
 		if r.URL != "" {
 			e, ok := datasource.Get(r.URL)
@@ -37,9 +38,8 @@ var SeriesList = request.Handler(func(r *SeriesListRequest) (*SeriesListResponse
 			}
 			q.Where("id", "=", models.IDMapQuery(r.Ctx).Select("series_id").Where("source", "=", e.Source).Where("source_series_id", "=", e.ID))
 		}
-		return q.
-			OrderByRaw(`similarity("title", $1) DESC`).
-			Get(tx)
+
+		return q.Get(tx)
 	})
 	if err != nil {
 		return nil, err

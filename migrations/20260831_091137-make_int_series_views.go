@@ -21,8 +21,10 @@ select
 	)) AS "aliases",
 	raw_payload #>> '{data,0,attributes,description,en}' as "description",
 	make_date((raw_payload #>> '{data,0,attributes,year}')::int, 1, 1) as "start_date",
+    'https://mangadex.org/covers/' || (raw_payload #>> '{data,0,id}')::text || '/' || (select rel  #>> '{attributes,fileName}' from jsonb_array_elements(raw_payload #> '{data,0,relationships}') as rel where rel ->> 'type' = 'cover_art' limit 1) as "cover_url",
 	(raw_payload #>> '{data,0,attributes,updatedAt}')::timestamptz as "updated_at",
-	(raw_payload #>> '{data,0,attributes,createdAt}')::timestamptz as "created_at"
+	(raw_payload #>> '{data,0,attributes,createdAt}')::timestamptz as "created_at",
+	raw_payload
 from api_responses
 where
 	"source" = 'mangadex'
@@ -34,7 +36,9 @@ CREATE MATERIALIZED VIEW int_mangaplus_series as
 select
 	(raw_payload #>> '{title,titleId}')::varchar as "id",
 	raw_payload #>> '{title,name}' as "title",
-	raw_payload ->> 'overview' as "description"
+	raw_payload ->> 'overview' as "description",
+	raw_payload ->> 'titleImageUrl' as "banner_url",
+	raw_payload #>> '{title,portraitImageUrl}' as "cover_url"
 from
 	api_responses
 where
@@ -48,7 +52,9 @@ select
   "source_series_id" as "id",
   "raw_payload" ->> 'title' as "title",
   "raw_payload" ->> 'description' as "description",
-  "raw_payload" ->> 'author' as "author"
+  "raw_payload" ->> 'author' as "author",
+  "raw_payload" ->> 'banner_image' as "banner_url",
+  (select rel  ->> 'cover_image' from jsonb_array_elements(raw_payload -> 'volumes') as rel order by rel -> 'number' desc limit 1) as "cover_url"
 from
   api_responses
 where
@@ -78,7 +84,8 @@ select
 			OR edge #>> '{role}' ILIKE '%Original Creator%'
 			OR edge #>> '{role}' ILIKE '%Supervisor%'
     )) AS "authors",
-	raw_payload
+	(raw_payload #>> '{data,Media,coverImage,extraLarge}')::text as "cover_url",
+	(raw_payload #>> '{data,Media,bannerImage}')::text as "banner_url"
 from
 	api_responses
 where

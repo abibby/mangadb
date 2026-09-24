@@ -43,5 +43,7 @@ func InitRoutes(r *router.Router) {
 			r.Get("/{series_id}/chapters", handlers.ChapterList)
 		})
 
+		r.Get("/image/{image_id}", handlers.Image).Name("image.get")
+
 	})
 }

@@ -18,10 +18,10 @@ const AnilistSource = "anilist"
 const AnilistQuality = 25
 
 const MangaplusSource = "mangaplus"
-const MangaplusQuality = 50
+const MangaplusQuality = 51
 
 const VizSource = "viz"
-const VizQuality = 51
+const VizQuality = 50
 
 func Get(u string) (*events.FetchSeriesEvent, bool) {
 	if id, ok := strings.CutPrefix(u, "https://mangaplus.shueisha.co.jp/titles/"); ok {

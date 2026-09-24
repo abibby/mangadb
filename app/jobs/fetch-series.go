@@ -28,7 +28,7 @@ func (m *FetchSeries) Handle(ctx context.Context, e *events.FetchSeriesEvent) er
 	exists, err := models.ApiResponseQuery(ctx).
 		Where("source", "=", e.Source).
 		Where("source_series_id", "=", e.ID).
-		// Where("updated_at", "<", time.Now().Add(-10*time.Minute)).
+		WhereRaw("updated_at < NOW() - INTERVAL '10 minutes'").
 		Count(m.DB)
 	if err != nil {
 		return err
