@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"abibby.com/mangadb/app/providers"
+	"github.com/google/uuid"
 	"gosalusa.com/database"
 	"gosalusa.com/database/builder"
 	"gosalusa.com/database/jsoncolumn"
@@ -26,17 +27,15 @@ type Series struct {
 	StartDate     any                      `json:"start_date"  db:"start_date"`
 	Genre         jsoncolumn.Slice[string] `json:"genre"       db:"genre"`
 	Tags          jsoncolumn.Slice[string] `json:"tags"        db:"tags"`
-	CoverImageID  nulls.Null[string]       `json:"-"           db:"cover_image_id"`
-	BannerImageID nulls.Null[string]       `json:"-"           db:"banner_image_id"`
+	CoverImageID  uuid.NullUUID            `json:"-"           db:"cover_image_id"`
+	BannerImageID uuid.NullUUID            `json:"-"           db:"banner_image_id"`
 
 	CoverImageURL  nulls.Null[string] `json:"cover_image_url"  db:"-"`
 	BannerImageURL nulls.Null[string] `json:"banner_image_url" db:"-"`
 
-	IDMaps *builder.HasMany[*IDMap] `foreign:"series_id" json:"ids"`
-
-	// Staff    *builder.HasMany[*Staff]   `json:"staff"`
-	// Chapters *builder.HasMany[*Chapter] `json:"chapters"`
-	// Volumes  *builder.HasMany[*Volume]  `json:"volumes"`
+	IDMaps   *builder.HasMany[*IDMap]   `json:"ids"                foreign:"series_id"`
+	Chapters *builder.HasMany[*Chapter] `json:"chapters,omitempty" foreign:"series_id" `
+	Volumes  *builder.HasMany[*Volume]  `json:"volumes,omitempty"  foreign:"series_id" `
 }
 
 func init() {
@@ -55,11 +54,11 @@ func (s *Series) AfterLoad(ctx context.Context, tx database.DB) error {
 
 	if s.CoverImageID.Valid {
 		s.CoverImageURL.Valid = true
-		s.CoverImageURL.V = url.Resolve("image.get", "image_id", s.CoverImageID.V)
+		s.CoverImageURL.V = url.Resolve("image.get", "image_id", s.CoverImageID.UUID)
 	}
 	if s.BannerImageID.Valid {
 		s.BannerImageURL.Valid = true
-		s.BannerImageURL.V = url.Resolve("image.get", "image_id", s.BannerImageID.V)
+		s.BannerImageURL.V = url.Resolve("image.get", "image_id", s.BannerImageID.UUID)
 	}
 	return nil
 }

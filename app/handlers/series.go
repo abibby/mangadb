@@ -9,6 +9,7 @@ import (
 	"abibby.com/mangadb/services/datasource"
 	"github.com/jmoiron/sqlx"
 	"gosalusa.com/database"
+	"gosalusa.com/extra/sets"
 	"gosalusa.com/request"
 )
 
@@ -50,7 +51,9 @@ var SeriesList = request.Handler(func(r *SeriesListRequest) (*SeriesListResponse
 })
 
 type SeriesViewRequest struct {
-	ID   string          `path:"series_id"`
+	ID   string   `path:"series_id"`
+	With []string `query:"with"`
+
 	Read database.Read   `inject:""`
 	Ctx  context.Context `inject:""`
 }
@@ -59,8 +62,16 @@ type SeriesViewResponse struct {
 }
 
 var SeriesView = request.Handler(func(r *SeriesViewRequest) (*SeriesViewResponse, error) {
+	withSet := sets.New(r.With...)
 	series, err := database.Value(r.Read, func(tx *sqlx.Tx) (*models.Series, error) {
-		return models.SeriesQuery(r.Ctx).With("IDMaps").Find(tx, r.ID)
+		q := models.SeriesQuery(r.Ctx).With("IDMaps")
+		if withSet.Has("chapters") {
+			q.With("Chapters")
+		}
+		if withSet.Has("volumes") {
+			q.With("Volumes")
+		}
+		return q.Find(tx, r.ID)
 	})
 	if err != nil {
 		return nil, err

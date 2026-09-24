@@ -14,10 +14,10 @@ func init() {
 		Up: schema.Raw(`
 CREATE MATERIALIZED VIEW int_viz_volumes as
 SELECT
-	chapter.element -> 'id' as "id",
+	chapter.element ->> 'id' as "id",
 	api_responses.source_series_id as "series_id",
-	chapter.element -> 'number' as "number",
-	chapter.element -> 'cover_image' as "cover_url"
+	(chapter.element -> 'number')::numeric::int as "number",
+	chapter.element ->> 'cover_image' as "cover_url"
 FROM
 	api_responses,
 	jsonb_array_elements(raw_payload->'volumes') AS chapter(element)
@@ -31,14 +31,16 @@ CREATE MATERIALIZED VIEW int_mangadex_volumes as
 SELECT distinct on (chapter.element #>> '{id}')
 	chapter.element #>> '{id}' as "id",
 	api_responses.source_series_id as "series_id",
-	chapter.element #>> '{attributes,volume}' as "number",
+	(chapter.element #>> '{attributes,volume}')::numeric::int as "number",
     'https://mangadex.org/covers/' || api_responses.source_series_id || '/' || (chapter.element #>> '{attributes,fileName}')::text as "cover_url"
 FROM
     api_responses,
     jsonb_array_elements(raw_payload->'data') AS chapter(element)
-where
+WHERE
 	"source" = 'mangadex'
-	and "data_type" = 'covers';
+	and "data_type" = 'covers'
+	and (chapter.element #>> '{attributes,volume}') ~ '^[0-9]+([.][0-9]+)?$'
+	and (chapter.element #>> '{attributes,volume}')::numeric % 1 = 0;
 
 CREATE UNIQUE INDEX int_mangadex_volumes_id_idx ON int_mangadex_volumes (id);
 `),
