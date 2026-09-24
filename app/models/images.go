@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"abibby.com/mangadb/app/providers"
@@ -12,6 +11,7 @@ import (
 	"gosalusa.com/database/model"
 	"gosalusa.com/database/model/mixins"
 	"gosalusa.com/database/model/modeldi"
+	"gosalusa.com/extra/sets"
 	"gosalusa.com/stream"
 )
 
@@ -38,10 +38,29 @@ func ImagesQuery(ctx context.Context) *builder.ModelBuilder[*Image] {
 }
 
 func CreateImages(ctx context.Context, tx database.DB, imageURLs ...string) error {
-	images := stream.Of(imageURLs).
+	urls := stream.Of(imageURLs).
 		Filter(func(u string) bool {
-			fmt.Println("url", u)
 			return u != ""
+		})
+
+	existing, err := ImagesQuery(ctx).
+		WhereIn(
+			"source_url",
+			urls.Map(func(u string) any {
+				return u
+			}).Slice(),
+		).
+		Get(tx)
+	if err != nil {
+		return err
+	}
+	existingSet := sets.New(stream.Of(existing).Map(func(i *Image) string {
+		return i.SourceURL
+	}).Slice()...)
+
+	images := urls.
+		Filter(func(s string) bool {
+			return !existingSet.Has(s)
 		}).
 		Map(func(u string) *Image {
 			return &Image{SourceURL: u}

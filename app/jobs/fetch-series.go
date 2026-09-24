@@ -3,6 +3,7 @@ package jobs
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"abibby.com/mangadb/app/events"
 	"abibby.com/mangadb/app/models"
@@ -28,7 +29,7 @@ func (m *FetchSeries) Handle(ctx context.Context, e *events.FetchSeriesEvent) er
 	exists, err := models.ApiResponseQuery(ctx).
 		Where("source", "=", e.Source).
 		Where("source_series_id", "=", e.ID).
-		WhereRaw("updated_at < NOW() - INTERVAL '10 minutes'").
+		Where("updated_at", ">", time.Now().Add(-10*time.Minute).Format(time.RFC3339)).
 		Count(m.DB)
 	if err != nil {
 		return err
