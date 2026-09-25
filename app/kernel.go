@@ -62,7 +62,7 @@ var Kernel = kernel.New(
 			event.NewListener[*jobs.FetchSeries](),
 			event.NewListener[*jobs.FetchImages](),
 			event.NewListener[*jobs.UpdateViews](),
-		),
+		).Synchronous(),
 	),
 	kernel.InitRoutes(routes.InitRoutes),
 	kernel.APIDocumentation(

@@ -11,7 +11,7 @@ async function request(path, options) {
 
 export function listSeries(q) {
   const query = q ? `?q=${encodeURIComponent(q)}` : "";
-  return request(`/series${query}`).then((r) => r.series);
+  return request(`/series${query}`).then((r) => r.data);
 }
 
 export function getSeries(id, withRelations = []) {
@@ -19,11 +19,11 @@ export function getSeries(id, withRelations = []) {
     withRelations.length > 0
       ? `?with=${withRelations.map(encodeURIComponent).join("&with=")}`
       : "";
-  return request(`/series/${id}${query}`).then((r) => r.series);
+  return request(`/series/${id}${query}`).then((r) => r.data);
 }
 
 export function listChapters(id) {
-  return request(`/series/${id}/chapters`).then((r) => r.series);
+  return request(`/series/${id}/chapters`).then((r) => r.data);
 }
 
 export function importSeries(url) {

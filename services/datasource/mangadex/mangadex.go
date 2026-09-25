@@ -176,7 +176,6 @@ func (m *Client) Chapters(ctx context.Context, tx database.DB, id string) error 
 				return err
 			}
 			time.Sleep(time.Second ^ time.Duration(fails))
-			fmt.Println(time.Second ^ time.Duration(fails))
 			continue
 		}
 		fails = 0
@@ -232,7 +231,6 @@ func (m *Client) Covers(ctx context.Context, tx database.DB, id string) error {
 				return err
 			}
 			time.Sleep(time.Second ^ time.Duration(fails))
-			fmt.Println(time.Second ^ time.Duration(fails))
 			continue
 		}
 		fails = 0
@@ -278,8 +276,6 @@ func (m *Client) Covers(ctx context.Context, tx database.DB, id string) error {
 
 func (m *Client) request(method, url string, w io.Writer) error {
 	m.limiter.Take()
-
-	fmt.Println("REQUEST " + url)
 
 	r, err := http.NewRequest(method, url, http.NoBody)
 	if err != nil {

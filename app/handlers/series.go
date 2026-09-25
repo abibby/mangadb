@@ -10,24 +10,24 @@ import (
 	"abibby.com/mangadb/services/datasource"
 	"github.com/jmoiron/sqlx"
 	"gosalusa.com/database"
+	"gosalusa.com/database/builder"
 	"gosalusa.com/event"
 	"gosalusa.com/extra/sets"
 	"gosalusa.com/request"
 )
 
 type SeriesListRequest struct {
+	PaginatedRequest
+
 	Query string `query:"q"`
 	URL   string `query:"url"`
 
 	Read database.Read   `inject:""`
 	Ctx  context.Context `inject:""`
 }
-type SeriesListResponse struct {
-	Series []*models.Series `json:"series"`
-}
 
-var SeriesList = request.Handler(func(r *SeriesListRequest) (*SeriesListResponse, error) {
-	series, err := database.Value(r.Read, func(tx *sqlx.Tx) ([]*models.Series, error) {
+var SeriesList = request.Handler(func(r *SeriesListRequest) (*PaginatedResponse[*models.Series], error) {
+	response, err := database.Value(r.Read, func(tx *sqlx.Tx) (*PaginatedResponse[*models.Series], error) {
 		q := models.SeriesQuery(r.Ctx).
 			With("IDMaps")
 		if r.Query != "" {
@@ -42,14 +42,25 @@ var SeriesList = request.Handler(func(r *SeriesListRequest) (*SeriesListResponse
 			q.Where("id", "=", models.IDMapQuery(r.Ctx).Select("series_id").Where("source", "=", e.Source).Where("source_series_id", "=", e.ID))
 		}
 
-		return q.Get(tx)
+		series, err := q.Limit(r.Limit).Offset(r.Offset).Get(tx)
+		if err != nil {
+			return nil, err
+		}
+		total, err := q.Count(tx)
+		if err != nil {
+			return nil, err
+		}
+		return &PaginatedResponse[*models.Series]{
+			Data:   series,
+			Total:  total,
+			Offset: r.Offset,
+			Limit:  r.Limit,
+		}, nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &SeriesListResponse{
-		Series: series,
-	}, nil
+	return response, nil
 })
 
 type SeriesViewRequest struct {
@@ -60,7 +71,7 @@ type SeriesViewRequest struct {
 	Ctx  context.Context `inject:""`
 }
 type SeriesViewResponse struct {
-	Series *models.Series `json:"series"`
+	Data *models.Series `json:"data"`
 }
 
 var SeriesView = request.Handler(func(r *SeriesViewRequest) (*SeriesViewResponse, error) {
@@ -82,7 +93,7 @@ var SeriesView = request.Handler(func(r *SeriesViewRequest) (*SeriesViewResponse
 		return nil, request.ErrStatusNotFound
 	}
 	return &SeriesViewResponse{
-		Series: series,
+		Data: series,
 	}, nil
 })
 
@@ -111,15 +122,17 @@ var SeriesImport = request.Handler(func(r *SeriesImportRequest) (*SeriesImportRe
 	}
 
 	for i := 0; i < 10; i++ {
-		m, err := database.Value(r.Read, func(tx *sqlx.Tx) (*models.IDMap, error) {
-			return models.IDMapQuery(r.Ctx).Where("source", "=", e.Source).Where("source_series_id", "=", e.ID).First(tx)
+		m, err := database.Value(r.Read, func(tx *sqlx.Tx) (*models.Series, error) {
+			return models.SeriesQuery(r.Ctx).WhereHas("IDMaps", func(q *builder.Builder) *builder.Builder {
+				return q.Where("source", "=", e.Source).Where("source_series_id", "=", e.ID)
+			}).First(tx)
 		})
 		if err != nil {
 			return nil, err
 		}
 		if m != nil {
 			return &SeriesImportResponse{
-				SeriesID: m.SeriesID,
+				SeriesID: m.ID,
 			}, nil
 		}
 		time.Sleep(500 * time.Millisecond)

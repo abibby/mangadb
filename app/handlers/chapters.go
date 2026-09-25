@@ -16,7 +16,7 @@ type ChapterListRequest struct {
 	Ctx  context.Context `inject:""`
 }
 type ChapterListResponse struct {
-	Chapter []*models.Chapter `json:"series"`
+	Data []*models.Chapter `json:"data"`
 }
 
 var ChapterList = request.Handler(func(r *ChapterListRequest) (*ChapterListResponse, error) {
@@ -27,6 +27,6 @@ var ChapterList = request.Handler(func(r *ChapterListRequest) (*ChapterListRespo
 		return nil, err
 	}
 	return &ChapterListResponse{
-		Chapter: series,
+		Data: series,
 	}, nil
 })

@@ -6,3 +6,7 @@ type PaginatedResponse[T any] struct {
 	Offset int `json:"offset"`
 	Limit  int `json:"limit"`
 }
+type PaginatedRequest struct {
+	Offset int `query:"offset"`
+	Limit  int `query:"limit"`
+}

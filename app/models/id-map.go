@@ -57,7 +57,10 @@ func IDMapCreate(ctx context.Context, tx database.DB, quality int, m map[string]
 		if seriesID == "" {
 			seriesID = idMap.SeriesID
 		} else if seriesID != idMap.SeriesID {
-			panic("do something here")
+			err = model.SaveContext(ctx, tx, idMap)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	if seriesID == "" {
