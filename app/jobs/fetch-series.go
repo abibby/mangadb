@@ -3,16 +3,17 @@ package jobs
 import (
 	"context"
 	"log/slog"
-	"time"
+	"math/rand/v2"
 
 	"abibby.com/mangadb/app/events"
-	"abibby.com/mangadb/app/models"
 	"abibby.com/mangadb/services/datasource"
 	"abibby.com/mangadb/services/datasource/anilist"
 	"abibby.com/mangadb/services/datasource/mangadex"
 	"abibby.com/mangadb/services/datasource/mangaplus"
 	"abibby.com/mangadb/services/datasource/viz"
 	"github.com/jmoiron/sqlx"
+	"gosalusa.com/cache"
+	"gosalusa.com/event"
 )
 
 type FetchSeries struct {
@@ -23,18 +24,37 @@ type FetchSeries struct {
 	MDClient      *mangadex.Client  `inject:""`
 	MPClient      *mangaplus.Client `inject:""`
 	VizClient     *viz.Client       `inject:""`
+	Dispatch      event.Dispatch    `inject:""`
+	Cache         cache.MemoryCache `inject:""`
 }
 
 func (m *FetchSeries) Handle(ctx context.Context, e *events.FetchSeriesEvent) error {
-	exists, err := models.ApiResponseQuery(ctx).
-		Where("source", "=", e.Source).
-		Where("source_series_id", "=", e.ID).
-		Where("updated_at", ">", time.Now().Add(-10*time.Minute).Format(time.RFC3339)).
-		Count(m.DB)
+	idb := make([]byte, 8)
+	for i := range idb {
+		idb[i] = byte(rand.IntN(26) + 'a')
+	}
+	id := string(idb)
+	m.Logger = m.Logger.With("run_id", id)
+	for _, s := range e.Series {
+		err := m.fetchSeries(ctx, id, s)
+		if err != nil {
+			return err
+		}
+	}
+	err := m.Dispatch(ctx, &events.UpdateViewsEvent{})
 	if err != nil {
 		return err
 	}
-	if exists > 0 {
+	return m.Dispatch(ctx, &events.FetchImagesEvent{})
+}
+func (m *FetchSeries) fetchSeries(ctx context.Context, id string, e *datasource.Series) error {
+	cachedID, err := m.Cache.GetOrCreate("fetchSeries:"+e.Source+":"+e.ID, func() []byte {
+		return []byte(id)
+	})
+	if err != nil {
+		return err
+	}
+	if string(cachedID) != id {
 		m.Logger.Info("Fetch series skipped", "source", e.Source, "id", e.ID)
 		return nil
 	}
@@ -70,6 +90,7 @@ func (m *FetchSeries) Handle(ctx context.Context, e *events.FetchSeriesEvent) er
 			return err
 		}
 	}
+
 	m.Logger.Info("Fetch series finished", "source", e.Source, "id", e.ID)
 	return nil
 }

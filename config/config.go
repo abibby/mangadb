@@ -31,10 +31,10 @@ func Load() *Config {
 		Port:     env.Int("PORT", 2303),
 		BasePath: env.String("BASE_PATH", ""),
 		Database: &postgres.Config{
-			Username:   env.String("DATABASE_USERNAME", "icbmdb"),
-			Password:   env.String("DATABASE_PASSWORD", "icbmdb"),
+			Username:   env.String("DATABASE_USERNAME", "mangadb"),
+			Password:   env.String("DATABASE_PASSWORD", "mangadb"),
 			Host:       env.String("DATABASE_HOST", "localhost"),
-			Database:   env.String("DATABASE_NAME", "icbmdb"),
+			Database:   env.String("DATABASE_NAME", "mangadb"),
 			DisableSSL: true,
 		},
 		Mail: &email.SMTPConfig{

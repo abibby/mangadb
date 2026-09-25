@@ -5,6 +5,7 @@ import (
 
 	"abibby.com/mangadb/app/events"
 	"abibby.com/mangadb/app/providers"
+	"abibby.com/mangadb/services/datasource"
 	"github.com/google/uuid"
 	"gosalusa.com/database"
 	"gosalusa.com/database/builder"
@@ -87,12 +88,16 @@ func IDMapCreate(ctx context.Context, tx database.DB, quality int, m map[string]
 	if err != nil {
 		return err
 	}
+
+	series := make([]*datasource.Series, 0, len(m))
 	for k, v := range m {
-		dispatch(ctx, &events.FetchSeriesEvent{
+		series = append(series, &datasource.Series{
 			Source: k,
 			ID:     v,
 		})
 	}
 
-	return nil
+	return dispatch(ctx, &events.FetchSeriesEvent{
+		Series: series,
+	})
 }

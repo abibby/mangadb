@@ -1,12 +1,12 @@
 package events
 
 import (
+	"abibby.com/mangadb/services/datasource"
 	"gosalusa.com/event"
 )
 
 type FetchSeriesEvent struct {
-	Source string
-	ID     string
+	Series []*datasource.Series
 }
 
 var _ event.Event = (*FetchSeriesEvent)(nil)

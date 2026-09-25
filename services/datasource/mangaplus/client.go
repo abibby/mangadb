@@ -60,6 +60,12 @@ func (c *Client) Series(ctx context.Context, tx database.DB, id string) error {
 	if err != nil {
 		return err
 	}
+	err = models.IDMapCreate(ctx, tx, datasource.AnilistQuality, map[string]string{
+		datasource.MangaplusSource: id,
+	})
+	if err != nil {
+		return err
+	}
 	return models.ApiResponseCreateOrUpdate(ctx, tx, &models.APIResponse{
 		Source:         datasource.MangaplusSource,
 		SourceSeriesID: id,

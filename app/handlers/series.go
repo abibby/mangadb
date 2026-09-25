@@ -3,12 +3,14 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"time"
 
-	"abibby.com/mangadb/app/jobs"
+	"abibby.com/mangadb/app/events"
 	"abibby.com/mangadb/app/models"
 	"abibby.com/mangadb/services/datasource"
 	"github.com/jmoiron/sqlx"
 	"gosalusa.com/database"
+	"gosalusa.com/event"
 	"gosalusa.com/extra/sets"
 	"gosalusa.com/request"
 )
@@ -90,7 +92,7 @@ type SeriesImportRequest struct {
 	Read database.Read   `inject:""`
 	Ctx  context.Context `inject:""`
 
-	jobs.FetchSeries `inject:""`
+	Dispatch event.Dispatch `inject:""`
 }
 type SeriesImportResponse struct {
 	SeriesID string `json:"series_id"`
@@ -101,23 +103,28 @@ var SeriesImport = request.Handler(func(r *SeriesImportRequest) (*SeriesImportRe
 	if !ok {
 		return nil, fmt.Errorf("site not supported: %s", r.URL)
 	}
-	err := r.FetchSeries.Handle(r.Ctx, e)
-	if err != nil {
-		return nil, err
-	}
-
-	m, err := database.Value(r.Read, func(tx *sqlx.Tx) (*models.IDMap, error) {
-		return models.IDMapQuery(r.Ctx).Where("source", "=", e.Source).Where("source_series_id", "=", e.ID).First(tx)
+	err := r.Dispatch(r.Ctx, &events.FetchSeriesEvent{
+		Series: []*datasource.Series{e},
 	})
 	if err != nil {
 		return nil, err
 	}
-	if m == nil {
-		return &SeriesImportResponse{}, nil
+
+	for i := 0; i < 10; i++ {
+		m, err := database.Value(r.Read, func(tx *sqlx.Tx) (*models.IDMap, error) {
+			return models.IDMapQuery(r.Ctx).Where("source", "=", e.Source).Where("source_series_id", "=", e.ID).First(tx)
+		})
+		if err != nil {
+			return nil, err
+		}
+		if m != nil {
+			return &SeriesImportResponse{
+				SeriesID: m.SeriesID,
+			}, nil
+		}
+		time.Sleep(500 * time.Millisecond)
 	}
-	return &SeriesImportResponse{
-		SeriesID: m.SeriesID,
-	}, nil
+	return &SeriesImportResponse{}, nil
 })
 
 type SeriesLookupRequest struct {

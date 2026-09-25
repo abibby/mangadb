@@ -27,11 +27,14 @@ func (m *UpdateViews) Handle(ctx context.Context, e *events.UpdateViewsEvent) er
 		"int_mangadex_chapter",
 		"int_mangaplus_chapter",
 		"int_viz_chapter",
+		"int_mangadex_volumes",
+		"int_viz_volumes",
 	})
 
 	m.updateViews(ctx, []string{
 		"series",
 		"chapters",
+		"volumes",
 	})
 
 	m.Logger.Info("Finished updating views")

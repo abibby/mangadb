@@ -17,6 +17,7 @@ import (
 	"abibby.com/mangadb/services/datasource/viz"
 	"github.com/go-openapi/spec"
 	"gosalusa.com/auth"
+	"gosalusa.com/cache"
 	"gosalusa.com/clog"
 	"gosalusa.com/database"
 	"gosalusa.com/email"
@@ -45,6 +46,7 @@ var Kernel = kernel.New(
 			auth.Register[*models.User](ctx)
 			event.Register(ctx)
 			openapidocdi.Register(ctx)
+			cache.Register(ctx)
 
 			mangadex.Register(ctx)
 			mangaplus.Register(ctx)

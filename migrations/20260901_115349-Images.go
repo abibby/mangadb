@@ -7,7 +7,7 @@ import (
 
 func init() {
 	migrations.Add(&migrate.Migration{
-		Name: "20260920_115349-Images",
+		Name: "20260901_115349-Images",
 		Up: schema.Create("images", func(table *schema.Blueprint) {
 			table.Blob("id").Primary()
 			table.DateTime("created_at")
